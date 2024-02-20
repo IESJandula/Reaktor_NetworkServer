@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
-import es.jandula.tarea.Equipo;
+import es.iesjandula.reaktor.network_server.models.Equipo;
 
 public class Parser
 {
@@ -30,9 +30,6 @@ public class Parser
 		
 		// Inicializamos el scanner
 		Scanner scanner = new Scanner(content);
-		
-		// altamos la primera linea que no es util
-		scanner.nextLine();
 		
 		// Inicializamos los atributos del Equipo
 		String ip = "";
@@ -74,6 +71,7 @@ public class Parser
 				equipos.add(equipo);
 			}			
 		}
+		scanner.close();
 		return equipos;
 	}
 
