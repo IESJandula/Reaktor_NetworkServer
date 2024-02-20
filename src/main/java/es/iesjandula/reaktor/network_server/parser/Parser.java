@@ -30,7 +30,6 @@ public class Parser
 		//Cargado de datos del comando
 		//Separamos el contenido por \n
 		String [] splitContenido = content.split("\n");
-		
 		//Creacion de la lista de datos de cada adaptador 
 		List<String> datosConf = new LinkedList<String>();
 		//String identificador para identificar el adaptador
@@ -45,7 +44,7 @@ public class Parser
 			 * entonces se controla que no contenga el caracter "."
 			 * y se guarda como clave en el mapa
 			 * en caso contrario se controla que la key no sea nula para evitar las primeras lineas
-			 * y se rellena la lista con la informacion del adaptador
+			 * y se rellena la lista con la informacion del IPv4 y de la mascara de subred
 			*/
 			if(sentencia.trim().endsWith(":") && !sentencia.trim().contains("."))
 			{
@@ -53,15 +52,52 @@ public class Parser
 				datosConf = new LinkedList<String>();
 				map.put(keySentencia.trim(), datosConf);
 			}
-			else if(!keySentencia.isEmpty())
+			else if(!keySentencia.isEmpty() && (sentencia.contains("IPv4") || this.containsSubred(sentencia)))
 			{
-				datosConf.add(sentencia.trim());
+				String [] splitInfo = sentencia.split(":");
+				datosConf.add(splitInfo[1].trim());
 				map.put(keySentencia, datosConf);
+			}
+			
+		}
+		//Por ultimo eliminamos las claves que estan vacias para quedarnos solo
+		//con las claves que contengan IPv4 y mascara de subred
+		Map<String,List<String>> map2 = new HashMap<String,List<String>>();
+		for(Map.Entry<String, List<String>> entry:map.entrySet())
+		{
+			if(!entry.getValue().isEmpty())
+			{
+				map2.put(entry.getKey(), entry.getValue());
 			}
 		}
 		log.info("Parseo de informacion del comando ipconfig finalizado");
-		return map;
+		return map2;
 		
 	}
 	
+	/**
+	 * Metodo que comprueba el contenido de la sentencia del comando de ipconfig que
+	 * contenga la palavra 'Máscara de subred' en distintos casos
+	 * @param sentencia
+	 * @return false o true depende de si lo ha encontrado o no
+	 */
+	private boolean containsSubred(String sentencia)
+	{
+		boolean found = false;
+		if(sentencia.contains("Máscara de subred"))
+		{
+			found = true;
+		}
+		else if(sentencia.contains("de subred"))
+		{
+			found = true;
+		}
+		else if(sentencia.contains("subred"))
+		{
+			found = true;
+		}
+		return found;
+	}
+	
+
 }
