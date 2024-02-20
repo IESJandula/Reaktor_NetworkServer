@@ -1,9 +1,11 @@
 package es.iesjandula.reaktor.network_server.models;
 
+import es.iesjandula.reaktor.network_server.models.Id.PuertoId;
 import jakarta.persistence.Column;
+import jakarta.persistence.EmbeddedId;
 import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.MapsId;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -18,11 +20,10 @@ import lombok.NoArgsConstructor;
 public class Puerto
 {
 	/**
-     * Attribute - Numero del puerto
+     * Attribute - Puerto Id
      */
-	@Id
-	@Column
-	private Integer numero;
+	@EmbeddedId
+	private PuertoId puertoId;
 	
 	/**
      * Attribute - Nombre del puerto
@@ -31,5 +32,6 @@ public class Puerto
 	private String nombre;
 	
 	@ManyToOne
+	@MapsId("idEquipo")
 	private Equipo equipo;
 }
