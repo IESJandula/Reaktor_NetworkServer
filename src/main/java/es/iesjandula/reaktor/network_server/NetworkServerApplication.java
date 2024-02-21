@@ -6,7 +6,6 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 @SpringBootApplication
 public class NetworkServerApplication
 {
-
 	/**
 	 * Method main
 	 * @param args
