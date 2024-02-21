@@ -1,6 +1,8 @@
 package es.iesjandula.reaktor.network_server.utils;
 
 import java.net.InetAddress;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import java.net.UnknownHostException;
 
 import es.iesjandula.reaktor.network_server.exception.NetworkException;
@@ -8,6 +10,8 @@ import es.iesjandula.reaktor.network_server.exception.NetworkException;
 public class Utils
 {
 
+	private static Logger log = LogManager.getLogger();
+	
 	public static String getNetworkAddress(String ipAddress, String subnetMask) throws NetworkException
 	{
 		// Convert the IP and subnet mask strings to InetAddress objects
@@ -51,6 +55,7 @@ public class Utils
 			return networkAddress.getHostAddress() + "/" + Integer.toString(prefixLength);
 		} catch (UnknownHostException e)
 		{
+			log.error("The IP address entered is not correct / Error obtaining the Network address");
 			throw new NetworkException(1, "Error al obtener la ruta de red");
 		}
 	}
