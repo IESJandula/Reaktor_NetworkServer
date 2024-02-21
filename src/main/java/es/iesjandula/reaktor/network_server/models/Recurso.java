@@ -1,9 +1,11 @@
 package es.iesjandula.reaktor.network_server.models;
 
+import es.iesjandula.reaktor.network_server.models.Id.RecursoId;
 import jakarta.persistence.Column;
+import jakarta.persistence.EmbeddedId;
 import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.MapsId;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -20,9 +22,8 @@ public class Recurso
 	/**
      * Attribute - Numero de recurso
      */
-	@Id
-	@Column
-	private Long numero;
+	@EmbeddedId
+	private RecursoId recursoId;
 	
 	/**
      * Attribute - Nombre del recurso
@@ -31,5 +32,6 @@ public class Recurso
 	private String nombre;
 	
 	@ManyToOne
+	@MapsId("idEquipo")
 	private Equipo equipo;
 }

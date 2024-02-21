@@ -4,6 +4,7 @@ import java.util.List;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
@@ -23,6 +24,7 @@ public class Red
      * Attribute - Id de red
      */
 	@Id
+	@GeneratedValue
 	@Column
 	private Long id;
 	
