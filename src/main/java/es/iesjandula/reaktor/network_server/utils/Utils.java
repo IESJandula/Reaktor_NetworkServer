@@ -14,14 +14,14 @@ public class Utils
 		int i = 0;
 		while(i < equipo.getPuertos().size() && !equipo.getTipo().isEmpty())
 		{
-			//Si el número del puero es 1
-			if(equipo.getPuertos().get(i).getNumero() == 1)
+			//Si el número del puerto es 1
+			if(equipo.getPuertos().get(i).getPuertoId().getNumero() == 1)
 			{
 				//Será una impresora
 				equipo.setTipo(Equipo.TIPO_IMPRESORA);
 			}
-			//Si el número del puero es 2
-			else if(equipo.getPuertos().get(i).getNumero() == 2)
+			//Si el número del puerto es 2
+			else if(equipo.getPuertos().get(i).getPuertoId().getNumero() == 2)
 			{
 				//Será un server
 				equipo.setTipo(Equipo.TIPO_SERVER);
