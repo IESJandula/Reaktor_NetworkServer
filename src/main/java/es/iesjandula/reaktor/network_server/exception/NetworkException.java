@@ -57,7 +57,5 @@ public class NetworkException extends Exception
 		}
 		
 		return body;
-		
-		
 	}
 }
