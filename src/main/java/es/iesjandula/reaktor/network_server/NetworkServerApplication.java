@@ -9,7 +9,6 @@ import org.springframework.context.annotation.ComponentScan;
 @ComponentScan( basePackages = "es.iesjandula.reaktor.network_server")
 public class NetworkServerApplication implements CommandLineRunner
 {
-
 	/**
 	 * Method main
 	 * @param args

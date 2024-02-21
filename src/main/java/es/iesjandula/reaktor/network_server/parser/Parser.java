@@ -4,16 +4,20 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Scanner;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import es.iesjandula.reaktor.network_server.exception.NetworkException;
 
-public class Parser 
+import es.iesjandula.reaktor.network_server.models.Equipo;
+
+public class Parser
 {
 	/**Logger de la clase */
 	private static Logger log = LogManager.getLogger();
@@ -22,6 +26,7 @@ public class Parser
 	 * @param content contenido del comando
 	 * @return mapa con la informacion de cada adaptador
 	 * @throws NetworkException
+	 * @author Pablo Ruiz Canovas
 	 */
 	public Map<String,List<String>> parseIpConfig(String content) throws NetworkException
 	{
@@ -72,9 +77,65 @@ public class Parser
 		}
 		log.info("Parseo de informacion del comando ipconfig finalizado");
 		return map2;
-		
 	}
-	
+
+	/**
+	 * Parsea el string obtenido del mapeo del Nmap en una lista de Equipos con ip y mac
+	 * @param String (busqueda del Nmap)
+	 * @return List<Equipos>
+	 */
+	public List<Equipo> parseoNmapSN(String content)
+	{
+		// Lista de equipos a delvolver
+		List<Equipo> equipos = new ArrayList<Equipo>();
+		
+		// Inicializamos el scanner
+		Scanner scanner = new Scanner(content);
+		
+		// Inicializamos los atributos del Equipo
+		String ip = "";
+		String mac = "";
+		
+		// Hacemos un bucle mientras haya lineas en el string
+		while (scanner.hasNextLine())
+		{
+			// Guardamos la linea
+			String linea = scanner.nextLine();
+			String[] info = null;
+			
+			// Comprobamos si linea que contiene la ip
+			if (linea.contains("Nmap scan report"))
+			{
+				info = linea.split(" ");
+				
+				if (info.length > 5)
+				{
+					ip = info[5].replace("(", "").replace(")", "");
+				}
+				else if (info.length > 4)
+				{
+					ip = info[4];
+				}
+			}
+			
+			// Comprobamos si linea que contiene el MAC address
+			else if (linea.contains("MAC Address:"))
+			{
+				info = linea.split(" ");
+				mac = info[2];
+				
+				// Seteamos los atributos en un nuevo objeto equipo que añadimos a la lista
+				Equipo equipo = new Equipo();
+				equipo.setIp(ip);
+				equipo.setMac(mac);
+				
+				equipos.add(equipo);
+			}			
+		}
+		scanner.close();
+		return equipos;
+	}
+
 	/**
 	 * Metodo que comprueba el contenido de la sentencia del comando de ipconfig que
 	 * contenga la palavra 'Máscara de subred' en distintos casos
@@ -98,6 +159,6 @@ public class Parser
 		}
 		return found;
 	}
-	
+
 
 }
