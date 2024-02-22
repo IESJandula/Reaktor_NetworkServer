@@ -28,6 +28,12 @@ public class Parser
 	 * @throws NetworkException
 	 * @author Pablo Ruiz Canovas
 	 */
+	public Parser()
+	{
+		super();
+		// TODO Auto-generated constructor stub
+	}
+	
 	public Map<String,List<String>> parseIpConfig(String content) throws NetworkException
 	{
 		//Declaracion del mapa
@@ -78,6 +84,8 @@ public class Parser
 		log.info("Parseo de informacion del comando ipconfig finalizado");
 		return map2;
 	}
+
+	
 
 	/**
 	 * Parsea el string obtenido del mapeo del Nmap en una lista de Equipos con ip y mac
