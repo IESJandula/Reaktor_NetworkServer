@@ -195,10 +195,8 @@ public class Parser
                 portLines = true;
                 
             }
-        	//pasamos a la siguente linea hasta encontrar la palabra Running
-			line = scanner.nextLine();
 			//si la linea empieza con la palabra running obtenemos lo que vega detras de los 2 puntos(que es el nombre del sistema operativo)
-		    if(line.startsWith("Running:"))
+        	else if(line.startsWith("Running:"))
 		    {
 		    	String[] parts = line.split(":");
 		        SO             = parts[1].trim(); 
@@ -207,12 +205,17 @@ public class Parser
             {   	
 	            // Spliteamos la línea
 	            String[] parts    = lineContent.trim().split("\\s+");
-	            //obtenemos el numero del puerto
-	            String portNumber = parts[0].split("/")[0];
+	            
 	            if(parts.length != 2)
 	            {
 	            	portLines = false;
 	            }
+	            else 
+	            {
+	            	portLines = true;
+	            }
+	            //obtenemos el numero del puerto
+	            String portNumber = parts[0].split("/")[0];
 	            //y el servicio al que pertenece
 	            String service    = parts[2];
 	            puertoId.setNumero(Integer.parseInt(portNumber));
