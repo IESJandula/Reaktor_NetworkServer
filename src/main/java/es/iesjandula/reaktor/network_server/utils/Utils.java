@@ -80,19 +80,20 @@ public class Utils
 		try
 		{
 			String ip = equipo.getIp();
-			String comando = "nmap -Pn -O" + ip;
+			String comandoNmap = "nmap -Pn -O" + ip;
 			
 			String respuestaComandoNmap = tarea2(comando);
 			
 			parser.parseNmapPNO(equipo, respuestaComando);
 			obtainType(equipo);
-			if(equipo.getTipo() == "impresora")
+			if(equipo.getTipo().equals("impresora"))
 			{
 				log.info("El equipo es una impresora");
 			}
 			else
 			{
-				String respuestaComandoNetView = tarea2(comando);
+				String comandoNetView = "net view" + ip;
+				String respuestaComandoNetView = tarea2(comandoNetView);
 				tarea11(equipo,respuestaComandoNetView);
 			}
 		}catch(NetworkException exception)
