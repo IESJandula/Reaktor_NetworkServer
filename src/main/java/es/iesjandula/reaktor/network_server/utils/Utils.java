@@ -3,12 +3,15 @@ package es.iesjandula.reaktor.network_server.utils;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.List;
+import java.util.Map;
 import java.util.Scanner;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import es.iesjandula.reaktor.network_server.exception.NetworkException;
+import es.iesjandula.reaktor.network_server.parser.Parser;
 
 public class Utils
 {
@@ -108,5 +111,35 @@ public class Utils
 		}
 		// Return the result of the command execution
 		return resultado;
+	}
+	
+	/**
+	 * Method insertRedes , Methos to insert Redes
+	 */
+	void insertRedes(Map<String, List<String>> map) 
+	{
+		// TO-DO....
+	}
+	
+	/**
+	 * Method saveNetworks , Method for save all networks
+	 * @throws NetworkException 
+	 */
+	public void saveNetworks() throws NetworkException 
+	{
+		// Call to Parser object
+		Parser parse = new Parser();
+		try
+		{
+			// Try to call executeComand to get the ipconfig string, and parse it with parseIpConfig, on the last, try to insert with insertRedes
+			this.insertRedes(parse.parseIpConfig(this.executeCommand("ipconfig")));
+			
+		}
+		catch (NetworkException exception)
+		{
+			// Log and throw an exception for interruption errors
+			log.error("Error on save network", exception);
+			throw exception;
+		}
 	}
 }
