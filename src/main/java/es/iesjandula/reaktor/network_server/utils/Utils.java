@@ -9,7 +9,8 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import es.iesjandula.reaktor.network_server.exception.NetworkException;
-
+import lombok.NoArgsConstructor;
+@NoArgsConstructor
 public class Utils
 {
 
