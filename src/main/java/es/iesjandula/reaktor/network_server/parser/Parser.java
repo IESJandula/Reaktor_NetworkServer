@@ -176,7 +176,7 @@ public class Parser
 		String SO              = "";
 		//Variable para guardar una linea del content
 		String line            = "";
-		Scanner scanner        = new Scanner(content);
+	
 		// Dividir las líneas de string content
         String[] lines         = content.split("\n");
         // Almacenar resultados en una lista de puertos
@@ -227,8 +227,6 @@ public class Parser
 			//Una vez tenemos SO y nuestra lista de puertos las seteamos en nuetro objeto equipo
 			equipo.setSo(SO);
 			equipo.setPuertos(puertos);
-			//cerramos scanner
-			scanner.close();
         }
 
 	}
