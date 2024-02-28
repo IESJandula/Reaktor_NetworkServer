@@ -30,15 +30,12 @@ import es.iesjandula.reaktor.network_server.repository.IPuertoRepository;
 @Service
 public class Parser implements Iparser
 {
-
-	
-	@Autowired
-	IPuertoRepository iPuertoRepository;
-	@Autowired
-	IEquipoRepository iEquipoRepository;
 	/**Logger de la clase */
 	private static Logger log = LogManager.getLogger();
-	
+	@Autowired
+	private IPuertoRepository iPuertoRepository;
+	@Autowired
+	private IEquipoRepository iEquipoRepository;
 	@Autowired
 	private IRecursoRepository recursoRepository;
 
