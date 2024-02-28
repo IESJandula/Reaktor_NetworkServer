@@ -30,15 +30,12 @@ import es.iesjandula.reaktor.network_server.repository.IPuertoRepository;
 @Service
 public class Parser implements Iparser
 {
-
-	
-	@Autowired
-	IPuertoRepository iPuertoRepository;
-	@Autowired
-	IEquipoRepository iEquipoRepository;
 	/**Logger de la clase */
 	private static Logger log = LogManager.getLogger();
-	
+	@Autowired
+	private IPuertoRepository iPuertoRepository;
+	@Autowired
+	private IEquipoRepository iEquipoRepository;
 	@Autowired
 	private IRecursoRepository recursoRepository;
 
@@ -275,18 +272,17 @@ public class Parser implements Iparser
 		{
 			String line = scanner.nextLine();
 			
-			if (line.startsWith("PORT     STATE SERVICE")) 
+			if (line.startsWith("PORT")) 
 			{
 				portLines = true;
-				continue;
+				
 			}
-			if (portLines && !line.trim().isEmpty()) 
+			else if (portLines && !line.trim().isEmpty()) 
 			{
-				String[] parts = line.trim().split("\\s+");
-				String protocol = parts[0].split("/")[1];
-
-				if (protocol.equals("tcp") || protocol.equals("udp")) 
+				
+				if (line.contains("tcp") || line.contains("udp")) 
 				{	
+					String[] parts = line.trim().split("\\s+");
 					PuertoId puertoId = new PuertoId();
 					Puerto puerto = new Puerto();
 					String portNumber = parts[0].split("/")[0];
@@ -304,7 +300,7 @@ public class Parser implements Iparser
 					portLines = false;
 				}
 			}
-			if (line.startsWith("Running:"))
+			else if (line.startsWith("Running:"))
 			{
 				SO = line.split(":")[1].trim();
 			}
