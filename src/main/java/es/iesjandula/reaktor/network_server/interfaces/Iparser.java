@@ -12,5 +12,6 @@ public interface Iparser
 	public Map<String, List<String>> parseIpConfig(String content) throws NetworkException;
 	public List<Equipo> parseoNmapSN(String content);
 	public void parseNetView(Equipo equipo, String content);
+	public void parseNmapPNO(Equipo equipo, String content);
 	
 }
