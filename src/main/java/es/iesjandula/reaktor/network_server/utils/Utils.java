@@ -9,17 +9,21 @@ import java.util.Scanner;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import es.iesjandula.reaktor.network_server.exception.NetworkException;
 import es.iesjandula.reaktor.network_server.models.Red;
-import es.iesjandula.reaktor.network_server.models.Red;
 import es.iesjandula.reaktor.network_server.parser.Parser;
+import es.iesjandula.reaktor.network_server.repository.IRedRepository;
 
 public class Utils
 {
 
+	@Autowired
+    private IRedRepository redRepository;
+	
 	private static Logger log = LogManager.getLogger();
-
+	
 	public static String getNetworkAddress(String ipAddress, String subnetMask) throws NetworkException
 	{
 		// Convert the IP and subnet mask strings to InetAddress objects
@@ -117,10 +121,12 @@ public class Utils
 	
 	/**
 	 * Method insertRedes , Methos to insert Redes
+	 * @throws NetworkException 
 	 */
-	void insertRedes(Map<String, List<String>> map) 
+	void insertRedes(Map<String, List<String>> map) throws NetworkException 
 	{
-        // Iteracion sobre el mapa
+		
+		// Iteration on the map
         for (Map.Entry<String, List<String>> entry : map.entrySet()) 
         {
             String nombreRed = entry.getKey();
@@ -128,20 +134,25 @@ public class Utils
 
             try 
             {
-            	// Obtener la ruta de red utilizando getNetworkAddress
+            	// Get the network path using the getNetworkAddress method
                 String rutaRed = getNetworkAddress(nombreRed, "255.255.255.0");
 
-                // Crear un objeto Red
-                Red red = new Red(nombreRed, rutaRed, equipos);
+                // Create a Network Object
+                Red red = new Red();
+                red.setNombre(nombreRed);
+                red.setRutaRed(rutaRed);
                 
-             // Mensaje de éxito
+                // Save the network to the database using the network repository
+                redRepository.saveAndFlush(red);
+                
                 System.out.println("Red insertada en la base de datos: " + red);
             } 
             catch (NetworkException networkException) 
             {
                 networkException.printStackTrace();
-                // Logear el error
-                log.error("Error inserting the network into the database: " + networkException.getMessage());
+                // Log and throw an exception for interruption errors
+                log.error("Error inserting the network into the database", networkException);
+                throw networkException;
             }
         }
     }
