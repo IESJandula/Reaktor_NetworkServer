@@ -11,6 +11,8 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import es.iesjandula.reaktor.network_server.exception.NetworkException;
+import es.iesjandula.reaktor.network_server.models.Red;
+import es.iesjandula.reaktor.network_server.models.Red;
 import es.iesjandula.reaktor.network_server.parser.Parser;
 
 public class Utils
@@ -118,8 +120,31 @@ public class Utils
 	 */
 	void insertRedes(Map<String, List<String>> map) 
 	{
-		// TO-DO....
-	}
+        // Iteracion sobre el mapa
+        for (Map.Entry<String, List<String>> entry : map.entrySet()) 
+        {
+            String nombreRed = entry.getKey();
+            List<String> equipos = entry.getValue();
+
+            try 
+            {
+            	// Obtener la ruta de red utilizando getNetworkAddress
+                String rutaRed = getNetworkAddress(nombreRed, "255.255.255.0");
+
+                // Crear un objeto Red
+                Red red = new Red(nombreRed, rutaRed, equipos);
+                
+             // Mensaje de éxito
+                System.out.println("Red insertada en la base de datos: " + red);
+            } 
+            catch (NetworkException networkException) 
+            {
+                networkException.printStackTrace();
+                // Logear el error
+                log.error("Error inserting the network into the database: " + networkException.getMessage());
+            }
+        }
+    }
 	
 	/**
 	 * Method saveNetworks , Method for save all networks
