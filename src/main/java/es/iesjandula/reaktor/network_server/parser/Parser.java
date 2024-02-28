@@ -12,15 +12,23 @@ import java.util.Scanner;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import es.iesjandula.reaktor.network_server.exception.NetworkException;
 
 import es.iesjandula.reaktor.network_server.models.Equipo;
 import es.iesjandula.reaktor.network_server.models.Puerto;
 import es.iesjandula.reaktor.network_server.models.Id.PuertoId;
+import es.iesjandula.reaktor.network_server.repository.IEquipoRepository;
+import es.iesjandula.reaktor.network_server.repository.IPuertoRepository;
 
 public class Parser
 {
+	
+	@Autowired
+	IPuertoRepository iPuertoRepository;
+	@Autowired
+	IEquipoRepository iEquipoRepository;
 	/**Logger de la clase */
 	private static Logger log = LogManager.getLogger();
 	/**
@@ -164,7 +172,7 @@ public class Parser
 	/**
 	 * @author Manuel Martin Murillo
 	 * HACER UN METODO QUE PARSEE LA RESPUESTA DE LA EJECUCION DE UN COMANDO NMAP ESPECIFICO , EJEMPLO DEL COMANDO -> nmap -Pn -O 192.168.1.132 
-     *  void parseNmapPNO(Equipo equipo, String content)
+     * void parseNmapPNO(Equipo equipo, String content)
      * NOTA : SE LE PASARA UN EQUIPO , Y EL STRING CONTENT SERA LA INFORMACION DEVUELTA POR EL COMANDO NMAP -PN -O IP 
      * AL EQUIPO SE LE GUARDARA EL S.O , Y LA LISTA DE PUERTOS 
 	 * @param equipo
@@ -173,85 +181,51 @@ public class Parser
 	public void parseNmapPNO(Equipo equipo, String content)
 	{
 		
-			//Variable para guardar el sistema operativo
-			String SO             = "";
-			//Variable para guardar una linea del content
-			String line           = "";
-//			content               = "public static String getNetworkAddress(String ipAddress, String subnetMask) throws NetworkException\n"
-//										+ "Starting Nmap 7.94 ( https://nmap.org/ ) at 2024-02-21 20:29 Hora estßndar romance\n"
-//										+ "Nmap scan report for 192.168.1.129\n"
-//										+ "Host is up (0.00064s latency).\n"
-//										+ "Not shown: 995 closed tcp ports (reset)\n"
-//										+ "PORT     STATE SERVICE\n"
-//										+ "135/tcp  open  msrpc\n"
-//										+ "139/tcp  open  netbios-ssn\n"
-//										+ "445/tcp  open  microsoft-ds\n"
-//										+ "3306/tcp open  mysql\n"
-//										+ "5357/tcp open  wsdapi\n"
-//										+ "Device type: general purpose\n"
-//										+ "Running: Microsoft Windows 10\n"
-//										+ "OS CPE: cpe:/o:microsoft:windows_10\n"
-//										+ "OS details: Microsoft Windows 10 1809 - 2004\n"
-//										+ "Network Distance: 0 hops\n"
-//										+ "\n"
-//										+ "OS detection performed. Please report any incorrect results at https://nmap.org/submit/ .\n"
-//										+ "Nmap done: 1 IP address (1 host up) scanned in 1.25 seconds";
-			Scanner scanner        = new Scanner(content);
-			// Dividir las líneas de string content
-	        String[] lines         = content.split("\n");
-	        // Almacenar resultados en una lista de puertos
-			List<Puerto> puertos   = new ArrayList<>();
-			// Flag para saber si estamos en las lineas con puertos
-	        boolean portLines  = false;
-	        // Iterar sobre las líneas y procesar solo las que contienen información de puerto
-	        for (String lineContent : lines) 
-	        {
-	        	//Creamos un nuevo puerto
-	        	Puerto puerto = new Puerto();            
-	        	if (lineContent.startsWith("PORT     STATE SERVICE")) 
-	            {
-	                portLines = true;
-	                
-	            }
-	            else if (portLines && !lineContent.trim().isEmpty())
-	            {   	
-		            // Spliteamos la línea
-		            String[] parts    = lineContent.trim().split("\\s+");
-		            //obtenemos el numero del puerto
-		            String portNumber = parts[0].split("/")[0];
-		            String protocol = parts[0].split("/")[1];
-		            //y el servicio al que pertenece
-		            String service    = parts[2];
-		            System.out.println(protocol);
-		            //si el protocolo no es tcp o udp no añadira la linea
-		            if(!protocol.contains("tcp") && !protocol.contains("udp"))
-		            {
-		            	portLines = false;
-		            }
-		            // Check if the type is either "tcp" or "udp" and if the protocol contains "tcp" or "udp
-		            puerto.setNombre(portNumber+" "+service);
-		            // Agregar la información al ArrayList
-		            puertos.add(puerto);
-	            	
-	            }
-	            
-	        	//pasamos a la siguente linea hasta encontrar la palabra Running
-				while (scanner.hasNextLine()) 
+		Scanner scanner = null;
+		String SO = "";
+		List<Puerto> puertosList = new ArrayList<>();
+		boolean portLines = false;
+		scanner = new Scanner(content);
+		while (scanner.hasNextLine()) 
+		{
+			String line = scanner.nextLine();
+			
+			if (line.startsWith("PORT     STATE SERVICE")) 
+			{
+				portLines = true;
+				continue;
+			}
+			if (portLines && !line.trim().isEmpty()) 
+			{
+				String[] parts = line.trim().split("\\s+");
+				String protocol = parts[0].split("/")[1];
+
+				if (protocol.equals("tcp") || protocol.equals("udp")) 
+				{	
+					PuertoId puertoId = new PuertoId();
+					Puerto puerto = new Puerto();
+					String portNumber = parts[0].split("/")[0];
+					String service = parts[2];
+					puertoId.setNumero(Integer.parseInt(portNumber));
+					puertoId.setIdEquipo(equipo.getId());
+					puerto.setPuertoId(puertoId);
+					puerto.setNombre(service);
+					puerto.setEquipo(equipo);
+					iPuertoRepository.saveAndFlush(puerto);
+					puertosList.add(puerto);
+				} 
+				else 
 				{
-					line = scanner.nextLine();
-					//si la linea empieza con la palabra running obtenemos lo que vega detras de los 2 puntos(que es el nombre del sistema operativo)
-				    if(line.startsWith("Running:"))
-				    {
-				    	String[] parts = line.split(":");
-				        SO             = parts[1].trim();
-				    }
+					portLines = false;
 				}
-				//Una vez tenemos SO y nuestra lista de puertos las seteamos en nuetro objeto equipo
-				equipo.setSo(SO);
-				equipo.setPuertos(puertos);
-	        }
-	        //cerramos scanner
-	        scanner.close();
-		
+			}
+			if (line.startsWith("Running:"))
+			{
+				SO = line.split(":")[1].trim();
+			}
+		}
+		equipo.setSo(SO);
+		equipo.setPuertos(puertosList);
+		iEquipoRepository.saveAndFlush(equipo);
 	}
 }
