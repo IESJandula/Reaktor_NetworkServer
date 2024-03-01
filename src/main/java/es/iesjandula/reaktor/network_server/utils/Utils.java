@@ -12,6 +12,7 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import es.iesjandula.reaktor.network_server.exception.NetworkException;
+import es.iesjandula.reaktor.network_server.interfaces.Iparser;
 import es.iesjandula.reaktor.network_server.models.Red;
 import es.iesjandula.reaktor.network_server.parser.Parser;
 import es.iesjandula.reaktor.network_server.repository.IRedRepository;
@@ -19,6 +20,9 @@ import es.iesjandula.reaktor.network_server.repository.IRedRepository;
 public class Utils
 {
 
+	@Autowired
+    private Iparser iparse;
+	
 	@Autowired
     private IRedRepository redRepository;
 	
@@ -163,12 +167,10 @@ public class Utils
 	 */
 	public void saveNetworks() throws NetworkException 
 	{
-		// Call to Parser object
-		Parser parse = new Parser();
 		try
 		{
 			// Try to call executeComand to get the ipconfig string, and parse it with parseIpConfig, on the last, try to insert with insertRedes
-			this.insertRedes(parse.parseIpConfig(this.executeCommand("ipconfig")));
+			this.insertRedes(iparse.parseIpConfig(this.executeCommand("ipconfig")));
 			
 		}
 		catch (NetworkException exception)
