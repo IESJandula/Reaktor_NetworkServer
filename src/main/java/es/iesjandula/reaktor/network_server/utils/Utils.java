@@ -82,19 +82,19 @@ public class Utils
 			String ip = equipo.getIp();
 			String comandoNmap = "nmap -Pn -O" + ip;
 			
-			String respuestaComandoNmap = tarea2(comando);
+			String respuestaComandoNmap = executeCommand(comandoNmap);
 			
 			parser.parseNmapPNO(equipo, respuestaComando);
 			obtainType(equipo);
-			if(equipo.getTipo().equals("impresora"))
+			if(!equipo.getTipo().equals(Equipo.TIPO_IMPRESORA))
 			{
-				log.info("El equipo es una impresora");
+				String comandoNetView = "net view" + ip;
+				String respuestaComandoNetView = executeCommand(comandoNetView);
+				parser.parseNetView(equipo,respuestaComandoNetView);
 			}
 			else
 			{
-				String comandoNetView = "net view" + ip;
-				String respuestaComandoNetView = tarea2(comandoNetView);
-				tarea11(equipo,respuestaComandoNetView);
+				log.info("El equipo es una impresora");
 			}
 		}catch(NetworkException exception)
 		{
