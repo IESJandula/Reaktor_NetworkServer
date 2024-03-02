@@ -129,17 +129,17 @@ public class Utils
 		// Iteration on the map
         for (Map.Entry<String, List<String>> entry : map.entrySet()) 
         {
-            String nombreRed = entry.getKey();
-            List<String> equipos = entry.getValue();
+            String nameRed = entry.getKey();
+            List<String> subnetMask  = entry.getValue();
 
             try 
             {
             	// Get the network path using the getNetworkAddress method
-                String rutaRed = getNetworkAddress(nombreRed, "255.255.255.0");
+                String rutaRed = getNetworkAddress(nameRed, subnetMask.toString() );
 
                 // Create a Network Object
                 Red red = new Red();
-                red.setNombre(nombreRed);
+                red.setNombre(nameRed);
                 red.setRutaRed(rutaRed);
                 
                 // Save the network to the database using the network repository
