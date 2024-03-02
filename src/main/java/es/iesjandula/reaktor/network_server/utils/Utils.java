@@ -3,6 +3,7 @@ package es.iesjandula.reaktor.network_server.utils;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
@@ -11,18 +12,23 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import es.iesjandula.reaktor.network_server.exception.NetworkException;
-import es.iesjandula.reaktor.network_server.parser.Parser;
 import es.iesjandula.reaktor.network_server.models.Equipo;
+import es.iesjandula.reaktor.network_server.parser.Parser;
 
 public class Utils
 {
 
 	private static Logger log = LogManager.getLogger();
 
-	public static String getNetworkAddress(String ipAddress, String subnetMask) throws NetworkException
+	public Utils()
+	{
+		super();
+		// TODO Auto-generated constructor stub
+	}
+
+	public String getNetworkAddress(String ipAddress, String subnetMask) throws NetworkException
 	{
 		// Convert the IP and subnet mask strings to InetAddress objects
-
 		InetAddress ip;
 		try
 		{
@@ -65,6 +71,39 @@ public class Utils
 			log.error("The IP address entered is not correct / Error obtaining the Network address");
 			throw new NetworkException(1, "Error al obtener la ruta de red");
 		}
+	}
+
+	public void scanEquipo(Equipo equipo)
+	{
+		
+		Parser parser = new Parser();
+		try
+		{
+			String ip = equipo.getIp();
+			String comandoNmap = "nmap -Pn -O" + ip;
+			
+			String respuestaComandoNmap = executeCommand(comandoNmap);
+			
+			parser.parseNmapPNO(equipo, respuestaComando);
+			obtainType(equipo);
+			if(!equipo.getTipo().equals(Equipo.TIPO_IMPRESORA))
+			{
+				String comandoNetView = "net view" + ip;
+				String respuestaComandoNetView = executeCommand(comandoNetView);
+				parser.parseNetView(equipo,respuestaComandoNetView);
+			}
+			else
+			{
+				log.info("El equipo es una impresora");
+			}
+		}catch(NetworkException exception)
+		{
+			log.error("Error al escanear el equipo");
+			throw new NetworkException(1, exception.getMessage());
+		}
+		
+		
+		
 	}
 
 	public String executeCommand(String command) throws NetworkException

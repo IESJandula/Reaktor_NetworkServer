@@ -48,6 +48,7 @@ public class Parser implements Iparser
 	 * @throws NetworkException
 	 * @author Pablo Ruiz Canovas
 	 */
+
 	public Map<String, List<String>> parseIpConfig(String content) throws NetworkException
 	{
 		// Declaracion del mapa
@@ -96,6 +97,8 @@ public class Parser implements Iparser
 		log.info("Parseo de informacion del comando ipconfig finalizado");
 		return map2;
 	}
+
+	
 
 	/**
 	 * Parsea el string obtenido del mapeo del Nmap en una lista de Equipos con ip y
