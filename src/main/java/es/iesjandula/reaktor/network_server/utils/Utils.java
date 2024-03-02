@@ -10,15 +10,23 @@ import java.util.Scanner;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import es.iesjandula.reaktor.network_server.exception.NetworkException;
 import es.iesjandula.reaktor.network_server.models.Equipo;
+import es.iesjandula.reaktor.network_server.models.Red;
 import es.iesjandula.reaktor.network_server.parser.Parser;
+import es.iesjandula.reaktor.network_server.repository.IEquipoRepository;
 
 public class Utils
 {
 
+	@Autowired
+	private IEquipoRepository equipoRepository;
+	
 	private static Logger log = LogManager.getLogger();
+	
+	
 
 	public Utils()
 	{
@@ -209,4 +217,13 @@ public class Utils
 			equipo.setTipo(Equipo.TIPO_STANDARD);
 		}
 	}
+  
+  public void scanEquipos(Red red) throws NetworkException
+	{
+		List<Equipo> equipos = this.equipoRepository.findByRed(red);
+		for (Equipo equipo : equipos) {
+//			this.scanEquipo(equipo);
+		}
+	}
+  
 }
