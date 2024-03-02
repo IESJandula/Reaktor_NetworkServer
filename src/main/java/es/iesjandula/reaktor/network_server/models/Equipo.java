@@ -21,6 +21,7 @@ import lombok.NoArgsConstructor;
 @Table(name = "equipo")
 public class Equipo
 {
+	public static final String TIPO_IMPRESORA = "impresora";
 	/**
      * Attribute - Id del equipo
      */
