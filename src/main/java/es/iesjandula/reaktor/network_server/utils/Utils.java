@@ -3,6 +3,7 @@ package es.iesjandula.reaktor.network_server.utils;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
@@ -25,18 +26,17 @@ public class Utils
 	
 	private static Logger log = LogManager.getLogger();
 	
-	public void scanEquipos(Red red) throws NetworkException
+	
+
+	public Utils()
 	{
-		List<Equipo> equipos = this.equipoRepository.findByRed(red);
-		for (Equipo equipo : equipos) {
-//			this.scanEquipo(equipo);
-		}
+		super();
+		// TODO Auto-generated constructor stub
 	}
 
-	public static String getNetworkAddress(String ipAddress, String subnetMask) throws NetworkException
+	public String getNetworkAddress(String ipAddress, String subnetMask) throws NetworkException
 	{
 		// Convert the IP and subnet mask strings to InetAddress objects
-
 		InetAddress ip;
 		try
 		{
@@ -79,6 +79,39 @@ public class Utils
 			log.error("The IP address entered is not correct / Error obtaining the Network address");
 			throw new NetworkException(1, "Error al obtener la ruta de red");
 		}
+	}
+
+	public void scanEquipo(Equipo equipo)
+	{
+		
+		Parser parser = new Parser();
+		try
+		{
+			String ip = equipo.getIp();
+			String comandoNmap = "nmap -Pn -O" + ip;
+			
+			String respuestaComandoNmap = executeCommand(comandoNmap);
+			
+			parser.parseNmapPNO(equipo, respuestaComando);
+			obtainType(equipo);
+			if(!equipo.getTipo().equals(Equipo.TIPO_IMPRESORA))
+			{
+				String comandoNetView = "net view" + ip;
+				String respuestaComandoNetView = executeCommand(comandoNetView);
+				parser.parseNetView(equipo,respuestaComandoNetView);
+			}
+			else
+			{
+				log.info("El equipo es una impresora");
+			}
+		}catch(NetworkException exception)
+		{
+			log.error("Error al escanear el equipo");
+			throw new NetworkException(1, exception.getMessage());
+		}
+		
+		
+		
 	}
 
 	public String executeCommand(String command) throws NetworkException
@@ -155,6 +188,42 @@ public class Utils
 			// Log and throw an exception for interruption errors
 			log.error("Error on save network", exception);
 			throw exception;
+     }
+	}
+
+  /**
+	 * MÉTODO QUE PASANDOLE UN EQUIPO, IDENTIFIQUE EL TIPO DE EQUIPO
+	 * TIPOS POSIBLES:(PC O IMPRESORA)
+	 * @param equipo
+	 */
+	public void obtainType(Equipo equipo)
+	{
+		int i = 0;
+		while(i < equipo.getPuertos().size() && !equipo.getTipo().isEmpty())
+		{
+			//Si el número del puerto es el 9100, el 515 o el 631
+			if(equipo.getPuertos().get(i).getPuertoId().getNumero() == 9100 || equipo.getPuertos().get(i).getPuertoId().getNumero() == 515 || equipo.getPuertos().get(i).getPuertoId().getNumero() == 631)
+			{
+				//Será una impresora
+				equipo.setTipo(Equipo.TIPO_IMPRESORA);
+			}
+			i++;
+		}
+		
+		//Si no ha encontrado nada
+		if(equipo.getTipo().isEmpty())
+		{
+			//Será un pc
+			equipo.setTipo(Equipo.TIPO_STANDARD);
 		}
 	}
+  
+  public void scanEquipos(Red red) throws NetworkException
+	{
+		List<Equipo> equipos = this.equipoRepository.findByRed(red);
+		for (Equipo equipo : equipos) {
+//			this.scanEquipo(equipo);
+		}
+	}
+  
 }

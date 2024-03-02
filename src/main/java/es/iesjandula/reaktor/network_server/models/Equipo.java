@@ -21,6 +21,15 @@ import lombok.NoArgsConstructor;
 @Table(name = "equipo")
 public class Equipo
 {
+	/** CONSTANTE - IMPRESORA */
+	public final static String TIPO_IMPRESORA = "IMPRESORA";
+	
+	/** CONSTANTE - SERVER */
+	public final static String TIPO_SERVER = "SERVER";
+	
+	/** CONSTANTE - STANDARD */
+	public final static String TIPO_STANDARD = "STANDARD";
+	
 	/**
      * Attribute - Id del equipo
      */
