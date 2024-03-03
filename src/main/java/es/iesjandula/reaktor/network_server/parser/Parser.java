@@ -9,15 +9,9 @@ import java.util.Scanner;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
 import es.iesjandula.reaktor.network_server.exception.NetworkException;
-import es.iesjandula.reaktor.network_server.interfaze_parser.IParserEquipo;
 import es.iesjandula.reaktor.network_server.models.Equipo;
-import es.iesjandula.reaktor.network_server.models.Red;
-import es.iesjandula.reaktor.network_server.repository.IEquipoRepository;
-import es.iesjandula.reaktor.network_server.utils.Utils;
 
 public class Parser 
 {

@@ -3,12 +3,15 @@ package es.iesjandula.reaktor.network_server.utils;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.List;
 import java.util.Scanner;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import es.iesjandula.reaktor.network_server.exception.NetworkException;
+import es.iesjandula.reaktor.network_server.models.Equipo;
+import es.iesjandula.reaktor.network_server.models.Red;
 import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class Utils
@@ -109,5 +112,26 @@ public class Utils
 		}
 		// Return the result of the command execution
 		return resultado;
+	}
+	
+	public void  executeNmapSN(Red red) throws NetworkException 
+	{
+		String command="nmap -sn "+ red.getRutaRed();
+		try 
+		{
+			String content=this.executeCommand(command);
+			List<Equipo> equipos=this.iparse.parseoNmapSN(content);
+			
+			for(Equipo equipo : equipos)
+			{
+				equipo.setRed(red);
+			}
+			equipoRepository.saveAllAndFlush(equipos);
+		}
+		catch (NetworkException exception) {
+			String error ="Error al ejecutar nmap";
+			log.error(error,exception);
+			throw new NetworkException(2, error);
+		}
 	}
 }
