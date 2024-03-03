@@ -12,27 +12,40 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import org.springframework.stereotype.Service;
+
 import es.iesjandula.reaktor.network_server.exception.NetworkException;
-import es.iesjandula.reaktor.network_server.models.Equipo;
+import es.iesjandula.reaktor.network_server.interfaces.IUtils;
+import es.iesjandula.reaktor.network_server.interfaces.Iparser;
 import es.iesjandula.reaktor.network_server.models.Red;
+import es.iesjandula.reaktor.network_server.repository.IRedRepository;
+import es.iesjandula.reaktor.network_server.models.Equipo;
 import es.iesjandula.reaktor.network_server.parser.Parser;
 import es.iesjandula.reaktor.network_server.repository.IEquipoRepository;
 
-public class Utils
+
+@Service
+public class Utils implements IUtils
 {
+
+	@Autowired
+    private Iparser iparse;
+	
+	@Autowired
+    private IRedRepository redRepository;
 
 	@Autowired
 	private IEquipoRepository equipoRepository;
 	
 	private static Logger log = LogManager.getLogger();
 	
-	
-
 	public Utils()
-	{
+  {
 		super();
 		// TODO Auto-generated constructor stub
 	}
+
+
 
 	public String getNetworkAddress(String ipAddress, String subnetMask) throws NetworkException
 	{
@@ -163,11 +176,41 @@ public class Utils
 	
 	/**
 	 * Method insertRedes , Methos to insert Redes
+	 * @throws NetworkException 
 	 */
-	void insertRedes(Map<String, List<String>> map) 
+	public void insertRedes(Map<String, List<String>> map) throws NetworkException 
 	{
-		// TO-DO....
-	}
+		
+		// Iteration on the map
+        for (Map.Entry<String, List<String>> entry : map.entrySet()) 
+        {
+            String nameRed = entry.getKey();
+            List<String> subnetMask  = entry.getValue();
+
+            try 
+            {
+            	// Get the network path using the getNetworkAddress method
+                String rutaRed = getNetworkAddress(subnetMask.get(0), subnetMask.get(1));
+
+                // Create a Network Object
+                Red red = new Red();
+                red.setNombre(nameRed);
+                red.setRutaRed(rutaRed);
+                
+                // Save the network to the database using the network repository
+                redRepository.saveAndFlush(red);
+                
+                System.out.println("Red insertada en la base de datos: " + red);
+            } 
+            catch (NetworkException networkException) 
+            {
+                networkException.printStackTrace();
+                // Log and throw an exception for interruption errors
+                log.error("Error inserting the network into the database", networkException);
+                throw networkException;
+            }
+        }
+    }
 	
 	/**
 	 * Method saveNetworks , Method for save all networks
@@ -175,12 +218,10 @@ public class Utils
 	 */
 	public void saveNetworks() throws NetworkException 
 	{
-		// Call to Parser object
-		Parser parse = new Parser();
 		try
 		{
 			// Try to call executeComand to get the ipconfig string, and parse it with parseIpConfig, on the last, try to insert with insertRedes
-			this.insertRedes(parse.parseIpConfig(this.executeCommand("ipconfig")));
+			this.insertRedes(iparse.parseIpConfig(this.executeCommand("ipconfig")));
 			
 		}
 		catch (NetworkException exception)
