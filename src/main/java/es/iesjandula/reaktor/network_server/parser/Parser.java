@@ -12,19 +12,30 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+
 import es.iesjandula.reaktor.network_server.exception.NetworkException;
 import es.iesjandula.reaktor.network_server.interfaces.Iparser;
 import es.iesjandula.reaktor.network_server.models.Equipo;
+
 import es.iesjandula.reaktor.network_server.models.Recurso;
 import es.iesjandula.reaktor.network_server.models.Id.RecursoId;
 import es.iesjandula.reaktor.network_server.repository.IRecursoRepository;
 
+import es.iesjandula.reaktor.network_server.models.Puerto;
+import es.iesjandula.reaktor.network_server.models.Id.PuertoId;
+import es.iesjandula.reaktor.network_server.repository.IEquipoRepository;
+import es.iesjandula.reaktor.network_server.repository.IPuertoRepository;
+
+
 @Service
 public class Parser implements Iparser
 {
-	/** Logger de la clase */
+	/**Logger de la clase */
 	private static Logger log = LogManager.getLogger();
-	
+	@Autowired
+	private IPuertoRepository iPuertoRepository;
+	@Autowired
+	private IEquipoRepository iEquipoRepository;
 	@Autowired
 	private IRecursoRepository recursoRepository;
 
@@ -37,6 +48,7 @@ public class Parser implements Iparser
 	 * @throws NetworkException
 	 * @author Pablo Ruiz Canovas
 	 */
+
 	public Map<String, List<String>> parseIpConfig(String content) throws NetworkException
 	{
 		// Declaracion del mapa
@@ -85,6 +97,8 @@ public class Parser implements Iparser
 		log.info("Parseo de informacion del comando ipconfig finalizado");
 		return map2;
 	}
+
+	
 
 	/**
 	 * Parsea el string obtenido del mapeo del Nmap en una lista de Equipos con ip y
@@ -240,4 +254,62 @@ public class Parser implements Iparser
 		return resource;
 	}
 
+	/**
+	 * @author Manuel Martin Murillo
+	 * HACER UN METODO QUE PARSEE LA RESPUESTA DE LA EJECUCION DE UN COMANDO NMAP ESPECIFICO , EJEMPLO DEL COMANDO -> nmap -Pn -O 192.168.1.132 
+     * void parseNmapPNO(Equipo equipo, String content)
+     * NOTA : SE LE PASARA UN EQUIPO , Y EL STRING CONTENT SERA LA INFORMACION DEVUELTA POR EL COMANDO NMAP -PN -O IP 
+     * AL EQUIPO SE LE GUARDARA EL S.O , Y LA LISTA DE PUERTOS 
+	 * @param equipo
+	 * @param content
+	 */
+	public void parseNmapPNO(Equipo equipo, String content)
+	{
+		
+		Scanner scanner = null;
+		String SO = "";
+		List<Puerto> puertosList = new ArrayList<>();
+		boolean portLines = false;
+		scanner = new Scanner(content);
+		while (scanner.hasNextLine()) 
+		{
+			String line = scanner.nextLine();
+			
+			if (line.startsWith("PORT")) 
+			{
+				portLines = true;
+				
+			}
+			else if (portLines && !line.trim().isEmpty()) 
+			{
+				
+				if (line.contains("tcp") || line.contains("udp")) 
+				{	
+					String[] parts = line.trim().split("\\s+");
+					PuertoId puertoId = new PuertoId();
+					Puerto puerto = new Puerto();
+					String portNumber = parts[0].split("/")[0];
+					String service = parts[2];
+					puertoId.setNumero(Integer.parseInt(portNumber));
+					puertoId.setIdEquipo(equipo.getId());
+					puerto.setPuertoId(puertoId);
+					puerto.setNombre(service);
+					puerto.setEquipo(equipo);
+					iPuertoRepository.saveAndFlush(puerto);
+					puertosList.add(puerto);
+				} 
+				else 
+				{
+					portLines = false;
+				}
+			}
+			else if (line.startsWith("Running:"))
+			{
+				SO = line.split(":")[1].trim();
+			}
+		}
+		equipo.setSo(SO);
+		equipo.setPuertos(puertosList);
+		iEquipoRepository.saveAndFlush(equipo);
+	}
 }
