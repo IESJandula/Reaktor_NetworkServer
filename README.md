@@ -1,0 +1,23 @@
+# Reaktor NetworkServer
+Este proyecto ha sido creado para el escaneo de equipos de una red.
+Su principal funcionalidad es escanear las redes disponibles e intentar encontrar todos los equipos asociados a ella.
+
+Se puede diferenciar entre diferentes tipos de objetos a escanear:
+> Red: Aquel que contiene toda la información sobre una red completa, como su Ip de red y sus equipos asociados.
+
+> Equipos : Son aquellos que existen en una Red, contienen sus direcciones ip , su mac asociada (De la tarjeta de red), tipo de quipo y puertos abierto.
+
+> Puertos: Son aquellos que nos brindan el numero de puerto TCP o UDP existentes, contienen el número de puerto, el nombre del servicio al cual el puerto está asociado y mediante el tipo de puerto, podremos discriminar objetos equipos STANDARD o IMPRESORA.
+
+# REQUISITOS
+Este proyecto se basa en Java 17 y aunque luego será capaz de scanear todo tipo de equipos, solamente se puede ejecutar windows 10.
+
+### REQUISITO PRE-INSTALACIÓN
+Este proyecto utiliza la herramienta nmap , y hace uso interno de comandos como:
+```bash
+nmap -sn <ip>
+```
+Por lo tanto, es totalmente necesario instalar primero esta herramienta.
+
+# INSTALACIÓN
+Solamente se necesita descargar el proyecto y compilarlo.
