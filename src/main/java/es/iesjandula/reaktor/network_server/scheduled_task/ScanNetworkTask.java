@@ -23,18 +23,18 @@ public class ScanNetworkTask
     @Scheduled(fixedDelayString = "86400000", initialDelay = 2000)
     public void scanNetworkTask() throws NetworkException
     {
-    	try
-		{
-    		Utils util = new Utils();
-    		util.saveNetworks();
-    		//util.methodTarea8();
-    		//util.methodTarea13();
-		}
-		catch (NetworkException exception)
-		{
-			// Log and throw an exception for interruption errors
-			log.error("Error on scanNetworkTask scheluded", exception);
-			throw exception;
-		}
+//    	try
+//		{
+//    		Utils util = new Utils();
+//    		//util.saveNetworks();
+//    		//util.methodTarea8();
+//    		//util.methodTarea13();
+//		}
+//		catch (NetworkException exception)
+//		{
+//			// Log and throw an exception for interruption errors
+//			log.error("Error on scanNetworkTask scheluded", exception);
+//			throw exception;
+//		}
     }
 }

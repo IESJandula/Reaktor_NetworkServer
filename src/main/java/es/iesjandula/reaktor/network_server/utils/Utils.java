@@ -10,14 +10,16 @@ import java.util.Scanner;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import es.iesjandula.reaktor.network_server.exception.NetworkException;
+import es.iesjandula.reaktor.network_server.interfaces.IUtils;
 import es.iesjandula.reaktor.network_server.interfaces.Iparser;
 import es.iesjandula.reaktor.network_server.models.Red;
-import es.iesjandula.reaktor.network_server.parser.Parser;
 import es.iesjandula.reaktor.network_server.repository.IRedRepository;
 
-public class Utils
+@Service
+public class Utils implements IUtils
 {
 
 	@Autowired
@@ -28,7 +30,7 @@ public class Utils
 	
 	private static Logger log = LogManager.getLogger();
 	
-	public static String getNetworkAddress(String ipAddress, String subnetMask) throws NetworkException
+	public String getNetworkAddress(String ipAddress, String subnetMask) throws NetworkException
 	{
 		// Convert the IP and subnet mask strings to InetAddress objects
 
@@ -127,7 +129,7 @@ public class Utils
 	 * Method insertRedes , Methos to insert Redes
 	 * @throws NetworkException 
 	 */
-	void insertRedes(Map<String, List<String>> map) throws NetworkException 
+	public void insertRedes(Map<String, List<String>> map) throws NetworkException 
 	{
 		
 		// Iteration on the map
@@ -139,7 +141,7 @@ public class Utils
             try 
             {
             	// Get the network path using the getNetworkAddress method
-                String rutaRed = getNetworkAddress(nameRed, subnetMask.toString() );
+                String rutaRed = getNetworkAddress(subnetMask.get(0), subnetMask.get(1));
 
                 // Create a Network Object
                 Red red = new Red();
