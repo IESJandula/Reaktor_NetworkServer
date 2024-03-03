@@ -12,6 +12,8 @@ Se puede diferenciar entre diferentes tipos de objetos a escanear:
 # REQUISITOS
 Este proyecto se basa en Java 17 y aunque luego será capaz de scanear todo tipo de equipos, solamente se puede ejecutar windows 10.
 
+Se necesita tener Mysql instalado.
+
 ### REQUISITO PRE-INSTALACIÓN
 Este proyecto utiliza la herramienta nmap , y hace uso interno de comandos como:
 ```bash
@@ -19,5 +21,13 @@ nmap -sn <ip>
 ```
 Por lo tanto, es totalmente necesario instalar primero esta herramienta.
 
+Crear la base de datos network_server vacía en Mysql, para que pueda arrancar el proyecto correctamente.
+
 # INSTALACIÓN
 Solamente se necesita descargar el proyecto y compilarlo.
+
+# ENDPOINTS
+Existe un endpoint el cual nos brindará toda la información del escaneo en el momento de llamarlo:
+```bash
+[nmap -sn <ip>](http://localhost:8080/net/get/all/data)http://localhost:8080/net/get/all/data
+```
