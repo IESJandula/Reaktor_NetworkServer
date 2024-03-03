@@ -3,7 +3,6 @@ package es.iesjandula.reaktor.network_server.utils;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
@@ -11,17 +10,15 @@ import java.util.Scanner;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
-
 import org.springframework.stereotype.Service;
 
 import es.iesjandula.reaktor.network_server.exception.NetworkException;
 import es.iesjandula.reaktor.network_server.interfaces.IUtils;
 import es.iesjandula.reaktor.network_server.interfaces.Iparser;
-import es.iesjandula.reaktor.network_server.models.Red;
-import es.iesjandula.reaktor.network_server.repository.IRedRepository;
 import es.iesjandula.reaktor.network_server.models.Equipo;
-import es.iesjandula.reaktor.network_server.parser.Parser;
+import es.iesjandula.reaktor.network_server.models.Red;
 import es.iesjandula.reaktor.network_server.repository.IEquipoRepository;
+import es.iesjandula.reaktor.network_server.repository.IRedRepository;
 
 
 @Service
@@ -44,8 +41,6 @@ public class Utils implements IUtils
 		super();
 		// TODO Auto-generated constructor stub
 	}
-
-
 
 	public String getNetworkAddress(String ipAddress, String subnetMask) throws NetworkException
 	{
@@ -94,29 +89,33 @@ public class Utils implements IUtils
 		}
 	}
 
-	public void scanEquipo(Equipo equipo)
+	public void scanEquipo(Equipo equipo) throws NetworkException
 	{
 		
-		Parser parser = new Parser();
 		try
 		{
 			String ip = equipo.getIp();
-			String comandoNmap = "nmap -Pn -O" + ip;
+			String comandoNmap = "nmap -Pn -O " + ip;
 			
 			String respuestaComandoNmap = executeCommand(comandoNmap);
 			
-			parser.parseNmapPNO(equipo, respuestaComando);
+			this.iparse.parseNmapPNO(equipo, respuestaComandoNmap);
 			obtainType(equipo);
-			if(!equipo.getTipo().equals(Equipo.TIPO_IMPRESORA))
-			{
-				String comandoNetView = "net view" + ip;
-				String respuestaComandoNetView = executeCommand(comandoNetView);
-				parser.parseNetView(equipo,respuestaComandoNetView);
+			try {
+				if(!equipo.getTipo().equals(Equipo.TIPO_IMPRESORA))
+				{
+					String comandoNetView = "net view " + ip;
+					String respuestaComandoNetView = executeCommand(comandoNetView);
+					this.iparse.parseNetView(equipo,respuestaComandoNetView);
+				}
+				else
+				{
+					log.info("El equipo es una impresora");
+				}
+			}catch (NetworkException exception) {
+				log.error("Error al escanear recursos " + equipo.getIp());
 			}
-			else
-			{
-				log.info("El equipo es una impresora");
-			}
+			
 		}catch(NetworkException exception)
 		{
 			log.error("Error al escanear el equipo");
@@ -199,8 +198,6 @@ public class Utils implements IUtils
                 
                 // Save the network to the database using the network repository
                 redRepository.saveAndFlush(red);
-                
-                System.out.println("Red insertada en la base de datos: " + red);
             } 
             catch (NetworkException networkException) 
             {
@@ -240,7 +237,7 @@ public class Utils implements IUtils
 	public void obtainType(Equipo equipo)
 	{
 		int i = 0;
-		while(i < equipo.getPuertos().size() && !equipo.getTipo().isEmpty())
+		while(i < equipo.getPuertos().size() && equipo.getTipo() == null)
 		{
 			//Si el número del puerto es el 9100, el 515 o el 631
 			if(equipo.getPuertos().get(i).getPuertoId().getNumero() == 9100 || equipo.getPuertos().get(i).getPuertoId().getNumero() == 515 || equipo.getPuertos().get(i).getPuertoId().getNumero() == 631)
@@ -252,18 +249,41 @@ public class Utils implements IUtils
 		}
 		
 		//Si no ha encontrado nada
-		if(equipo.getTipo().isEmpty())
+		if(equipo.getTipo() == null)
 		{
 			//Será un pc
 			equipo.setTipo(Equipo.TIPO_STANDARD);
 		}
+		
+		this.equipoRepository.saveAndFlush(equipo);
 	}
   
   public void scanEquipos(Red red) throws NetworkException
 	{
 		List<Equipo> equipos = this.equipoRepository.findByRed(red);
 		for (Equipo equipo : equipos) {
-//			this.scanEquipo(equipo);
+			this.scanEquipo(equipo);
+		}
+	}
+  
+  public void  executeNmapSN(Red red) throws NetworkException 
+	{
+		String command="nmap -sn "+ red.getRutaRed();
+		try 
+		{
+			String content=this.executeCommand(command);
+			List<Equipo> equipos=this.iparse.parseoNmapSN(content);
+
+			for(Equipo equipo : equipos)
+			{
+				equipo.setRed(red);
+			}
+			equipoRepository.saveAllAndFlush(equipos);
+		}
+		catch (NetworkException exception) {
+			String error ="Error al ejecutar nmap";
+			log.error(error,exception);
+			throw new NetworkException(2, error);
 		}
 	}
   
