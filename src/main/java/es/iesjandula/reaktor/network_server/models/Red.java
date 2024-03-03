@@ -1,5 +1,6 @@
 package es.iesjandula.reaktor.network_server.models;
 
+import java.io.Serializable;
 import java.util.List;
 
 import jakarta.persistence.Column;
@@ -18,7 +19,7 @@ import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "red")
-public class Red
+public class Red implements Serializable
 {
 	/**
      * Attribute - Id de red
@@ -40,6 +41,7 @@ public class Red
 	@Column
 	private String rutaRed;
 	
+	/** Attribute equipos*/
 	@OneToMany(mappedBy = "red")
 	private List<Equipo> equipos;
 }

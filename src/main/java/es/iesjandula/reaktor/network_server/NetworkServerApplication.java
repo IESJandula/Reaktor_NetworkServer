@@ -6,10 +6,14 @@ import org.springframework.boot.autoconfigure.domain.EntityScan;
 
 import org.springframework.scheduling.annotation.EnableScheduling;
 
+/**
+ * @author David Martinez
+ *
+ */
 @SpringBootApplication
 @EnableScheduling
 @EntityScan( basePackages = "es.iesjandula.reaktor.network_server")
-public class NetworkServerApplication implements CommandLineRunner
+public class NetworkServerApplication
 {
 
 	/**
@@ -20,8 +24,4 @@ public class NetworkServerApplication implements CommandLineRunner
 	{
 		SpringApplication.run(NetworkServerApplication.class, args);
 	}
-
-	
-	
-
 }

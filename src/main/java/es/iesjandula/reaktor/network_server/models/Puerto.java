@@ -1,5 +1,9 @@
 package es.iesjandula.reaktor.network_server.models;
 
+import java.io.Serializable;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import es.iesjandula.reaktor.network_server.models.Id.PuertoId;
 import jakarta.persistence.Column;
 import jakarta.persistence.EmbeddedId;
@@ -17,7 +21,7 @@ import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "puerto")
-public class Puerto
+public class Puerto implements Serializable
 {
 	/**
      * Attribute - Puerto Id
@@ -31,7 +35,9 @@ public class Puerto
 	@Column
 	private String nombre;
 	
+	/** Attribute equipo*/
 	@ManyToOne
 	@MapsId("idEquipo")
+	@JsonIgnore
 	private Equipo equipo;
 }

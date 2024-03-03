@@ -1,6 +1,5 @@
 package es.iesjandula.reaktor.network_server.parser;
 
-import java.util.HashMap;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -14,51 +13,56 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import es.iesjandula.reaktor.network_server.exception.NetworkException;
-import es.iesjandula.reaktor.network_server.interfaces.Iparser;
+import es.iesjandula.reaktor.network_server.interfaces.IParser;
 import es.iesjandula.reaktor.network_server.models.Equipo;
-
-import es.iesjandula.reaktor.network_server.models.Recurso;
-import es.iesjandula.reaktor.network_server.models.Id.RecursoId;
-import es.iesjandula.reaktor.network_server.repository.IRecursoRepository;
-
 import es.iesjandula.reaktor.network_server.models.Puerto;
+import es.iesjandula.reaktor.network_server.models.Recurso;
 import es.iesjandula.reaktor.network_server.models.Id.PuertoId;
+import es.iesjandula.reaktor.network_server.models.Id.RecursoId;
 import es.iesjandula.reaktor.network_server.repository.IEquipoRepository;
 import es.iesjandula.reaktor.network_server.repository.IPuertoRepository;
+import es.iesjandula.reaktor.network_server.repository.IRecursoRepository;
 
 
 @Service
-public class Parser implements Iparser
+public class Parser implements IParser
 {
-	
+
 	/**Logger de la clase */
 	private static Logger log = LogManager.getLogger();
+
+	/** Attribute iPuertoRepository*/
 	@Autowired
 	private IPuertoRepository iPuertoRepository;
+
+	/** Attribute iEquipoRepository*/
 	@Autowired
 	private IEquipoRepository iEquipoRepository;
+
+	/** Attribute recursoRepository*/
 	@Autowired
 	private IRecursoRepository recursoRepository;
 
 	/**
 	 * Metodo que recibe el contenido del comando ipconfig y lo parsea a un mapa de
 	 * <String,List<String>>
-	 * 
+	 *
 	 * @param content contenido del comando
 	 * @return mapa con la informacion de cada adaptador
 	 * @throws NetworkException
 	 * @author Pablo Ruiz Canovas
 	 */
 
+	@Override
 	public Map<String, List<String>> parseIpConfig(String content) throws NetworkException
 	{
 		// Declaracion del mapa
-		Map<String, List<String>> map = new HashMap<String, List<String>>();
+		Map<String, List<String>> map = new HashMap<>();
 		// Cargado de datos del comando
 		// Separamos el contenido por \n
 		String[] splitContenido = content.split("\n");
 		// Creacion de la lista de datos de cada adaptador
-		List<String> datosConf = new LinkedList<String>();
+		List<String> datosConf = new LinkedList<>();
 		// String identificador para identificar el adaptador
 		String keySentencia = "";
 		for (String sentencia : splitContenido)
@@ -74,7 +78,7 @@ public class Parser implements Iparser
 			if (sentencia.trim().endsWith(":") && !sentencia.trim().contains("."))
 			{
 				keySentencia = sentencia;
-				datosConf = new LinkedList<String>();
+				datosConf = new LinkedList<>();
 				map.put(keySentencia.trim(), datosConf);
 			}
 			else if (!keySentencia.isEmpty() && (sentencia.contains("IPv4") || this.containsSubred(sentencia)))
@@ -87,7 +91,7 @@ public class Parser implements Iparser
 		}
 		// Por ultimo eliminamos las claves que estan vacias para quedarnos solo
 		// con las claves que contengan IPv4 y mascara de subred
-		Map<String, List<String>> map2 = new HashMap<String, List<String>>();
+		Map<String, List<String>> map2 = new HashMap<>();
 		for (Map.Entry<String, List<String>> entry : map.entrySet())
 		{
 			if (!entry.getValue().isEmpty())
@@ -95,24 +99,25 @@ public class Parser implements Iparser
 				map2.put(entry.getKey(), entry.getValue());
 			}
 		}
-		log.info("Parseo de informacion del comando ipconfig finalizado");
+		Parser.log.info("Parseo de informacion del comando ipconfig finalizado");
 		return map2;
 	}
 
-	
+
 
 	/**
 	 * Parsea el string obtenido del mapeo del Nmap en una lista de Equipos con ip y
 	 * mac
-	 * 
+	 *
 	 * @param String (busqueda del Nmap)
 	 * @return List<Equipos>
 	 */
-	
+
+	@Override
 	public List<Equipo> parseoNmapSN(String content)
 	{
 		// Lista de equipos a delvolver
-		List<Equipo> equipos = new ArrayList<Equipo>();
+		List<Equipo> equipos = new ArrayList<>();
 
 		// Inicializamos el scanner
 		Scanner scanner = new Scanner(content);
@@ -136,7 +141,7 @@ public class Parser implements Iparser
 				if (info.length > 5)
 				{
 					ip = info[5].replace("(", "").replace(")", "");
-				} 
+				}
 				else if (info.length > 4)
 				{
 					ip = info[4];
@@ -159,40 +164,33 @@ public class Parser implements Iparser
 		}
 		scanner.close();
 		return equipos;
-		
+
 	}
 
 	/**
 	 * Metodo que comprueba el contenido de la sentencia del comando de ipconfig que
 	 * contenga la palavra 'Máscara de subred' en distintos casos
-	 * 
+	 *
 	 * @param sentencia
 	 * @return false o true depende de si lo ha encontrado o no
 	 */
 	private boolean containsSubred(String sentencia)
 	{
 		boolean found = false;
-		if (sentencia.contains("Máscara de subred"))
-		{
-			found = true;
-		} 
-		else if (sentencia.contains("de subred"))
-		{
-			found = true;
-		} 
-		else if (sentencia.contains("subred"))
+		if (sentencia.contains("Máscara de subred") || sentencia.contains("de subred") || sentencia.contains("subred"))
 		{
 			found = true;
 		}
 		return found;
 	}
 	/**
-	 * metodo que parsea la respuesta de la ejecucion del comando net view 
+	 * metodo que parsea la respuesta de la ejecucion del comando net view
 	 * y la guarda en base de datos los recursos de ese equipo
-	 * @param content 
+	 * @param content
 	 * @param Equipo
-	 * 
+	 *
 	 */
+	@Override
 	public void parseNetView(Equipo equipo, String content)
 	{
 		boolean startParse = false;
@@ -209,7 +207,7 @@ public class Parser implements Iparser
 				{
 					//le seteamos los valores al recurso
 					Recurso recurso = new Recurso();
-					recurso.setNombre(parseLine(linea));
+					recurso.setNombre(this.parseLine(linea));
 					recurso.setEquipo(equipo);
 					RecursoId recursoId = new RecursoId();
 					recursoId.setIdEquipo(equipo.getId());
@@ -243,7 +241,7 @@ public class Parser implements Iparser
 		int i = 0;
 		String resource = "";
 		//recorremos el array hasta que se encuentre una caja vacia
-		while (i < array.length && !array[i].equals(""))
+		while ((i < array.length) && !array[i].equals(""))
 		{
 			String arrayLine = array[i];
 			if (!array[i].isEmpty())
@@ -259,35 +257,36 @@ public class Parser implements Iparser
 
 	/**
 	 * @author Manuel Martin Murillo
-	 * HACER UN METODO QUE PARSEE LA RESPUESTA DE LA EJECUCION DE UN COMANDO NMAP ESPECIFICO , EJEMPLO DEL COMANDO -> nmap -Pn -O 192.168.1.132 
+	 * HACER UN METODO QUE PARSEE LA RESPUESTA DE LA EJECUCION DE UN COMANDO NMAP ESPECIFICO , EJEMPLO DEL COMANDO -> nmap -Pn -O 192.168.1.132
      * void parseNmapPNO(Equipo equipo, String content)
-     * NOTA : SE LE PASARA UN EQUIPO , Y EL STRING CONTENT SERA LA INFORMACION DEVUELTA POR EL COMANDO NMAP -PN -O IP 
-     * AL EQUIPO SE LE GUARDARA EL S.O , Y LA LISTA DE PUERTOS 
+     * NOTA : SE LE PASARA UN EQUIPO , Y EL STRING CONTENT SERA LA INFORMACION DEVUELTA POR EL COMANDO NMAP -PN -O IP
+     * AL EQUIPO SE LE GUARDARA EL S.O , Y LA LISTA DE PUERTOS
 	 * @param equipo
 	 * @param content
 	 */
+	@Override
 	public void parseNmapPNO(Equipo equipo, String content)
 	{
-		
+
 		Scanner scanner = null;
 		String SO = "";
 		List<Puerto> puertosList = new ArrayList<>();
 		boolean portLines = false;
 		scanner = new Scanner(content);
-		while (scanner.hasNextLine()) 
+		while (scanner.hasNextLine())
 		{
 			String line = scanner.nextLine();
-			
-			if (line.startsWith("PORT")) 
+
+			if (line.startsWith("PORT"))
 			{
 				portLines = true;
-				
+
 			}
-			else if (portLines && !line.trim().isEmpty()) 
+			else if (portLines && !line.trim().isEmpty())
 			{
-				
-				if (line.contains("tcp") || line.contains("udp")) 
-				{	
+
+				if (line.contains("tcp") || line.contains("udp"))
+				{
 					String[] parts = line.trim().split("\\s+");
 					PuertoId puertoId = new PuertoId();
 					Puerto puerto = new Puerto();
@@ -298,10 +297,10 @@ public class Parser implements Iparser
 					puerto.setPuertoId(puertoId);
 					puerto.setNombre(service);
 					puerto.setEquipo(equipo);
-					iPuertoRepository.saveAndFlush(puerto);
+					this.iPuertoRepository.saveAndFlush(puerto);
 					puertosList.add(puerto);
-				} 
-				else 
+				}
+				else
 				{
 					portLines = false;
 				}
@@ -313,6 +312,7 @@ public class Parser implements Iparser
 		}
 		equipo.setSo(SO);
 		equipo.setPuertos(puertosList);
-		iEquipoRepository.saveAndFlush(equipo);
+		scanner.close();
+		this.iEquipoRepository.saveAndFlush(equipo);
 	}
 }

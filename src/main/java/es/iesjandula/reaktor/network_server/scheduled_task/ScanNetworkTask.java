@@ -20,9 +20,11 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class ScanNetworkTask
 {
+	/** Attribute util*/
 	@Autowired
 	private IUtils util;
 	
+	/** Attribute redRepository*/
 	@Autowired
     private IRedRepository redRepository;
 	
@@ -35,14 +37,14 @@ public class ScanNetworkTask
 	{
 		try
 		{
-			 util.saveNetworks();
+			 this.util.saveNetworks();
 			 
 			 List<Red> redes = this.redRepository.findAll();
 			 
 			 for (Red red : redes)
 			{
 				 this.util.executeNmapSN(red);
-				 util.scanEquipos(red);
+				 this.util.scanEquipos(red);
 			}
 			log.info("Fin scan redes");
 			 

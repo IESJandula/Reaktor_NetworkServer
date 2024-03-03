@@ -1,6 +1,9 @@
 package es.iesjandula.reaktor.network_server.models;
 
+import java.io.Serializable;
 import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -17,9 +20,10 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 
+
 @Entity
 @Table(name = "equipo")
-public class Equipo
+public class Equipo implements Serializable
 {
 	/** CONSTANTE - IMPRESORA */
 	public final static String TIPO_IMPRESORA = "IMPRESORA";
@@ -62,12 +66,16 @@ public class Equipo
 	@Column
 	private String tipo;
 	
+	/** Attribute red*/
 	@ManyToOne
+	@JsonIgnore
 	private Red red;
 	
+	/** Attribute recursos*/
 	@OneToMany(mappedBy = "equipo")
 	private List<Recurso> recursos;
 	
+	/** Attribute puertos*/
 	@OneToMany(mappedBy = "equipo")
 	private List<Puerto> puertos;
 }

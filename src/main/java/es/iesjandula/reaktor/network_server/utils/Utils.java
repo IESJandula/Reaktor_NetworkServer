@@ -15,7 +15,7 @@ import org.springframework.stereotype.Service;
 
 import es.iesjandula.reaktor.network_server.exception.NetworkException;
 import es.iesjandula.reaktor.network_server.interfaces.IUtils;
-import es.iesjandula.reaktor.network_server.interfaces.Iparser;
+import es.iesjandula.reaktor.network_server.interfaces.IParser;
 import es.iesjandula.reaktor.network_server.models.Equipo;
 import es.iesjandula.reaktor.network_server.models.Red;
 import es.iesjandula.reaktor.network_server.repository.IEquipoRepository;
@@ -25,23 +25,36 @@ import es.iesjandula.reaktor.network_server.repository.IRedRepository;
 public class Utils implements IUtils
 {
 
+	/** Attribute iparse */
 	@Autowired
-    private Iparser iparse;
-	
-	@Autowired
-    private IRedRepository redRepository;
+	private IParser iparse;
 
+	/** Attribute redRepository */
+	@Autowired
+	private IRedRepository redRepository;
+
+	/** Attribute equipoRepository */
 	@Autowired
 	private IEquipoRepository equipoRepository;
-	
+
+	/** Attribute log */
 	private static Logger log = LogManager.getLogger();
-	
+
+	/**
+	 * Constructor for create new Utils
+	 */
 	public Utils()
-  {
+	{
 		super();
-		// TODO Auto-generated constructor stub
 	}
 
+	/**
+	 * Method getNetworkAddress
+	 * @param ipAddress
+	 * @param subnetMask
+	 * @return
+	 * @throws NetworkException
+	 */
 	public String getNetworkAddress(String ipAddress, String subnetMask) throws NetworkException
 	{
 		// Convert the IP and subnet mask strings to InetAddress objects
@@ -74,7 +87,8 @@ public class Utils implements IUtils
 					if ((b & (1 << i)) != 0)
 					{
 						prefixLength++;
-					} else
+					}
+					else
 					{
 						break;
 					}
@@ -82,50 +96,64 @@ public class Utils implements IUtils
 			}
 			// Return the network address and subnet mask prefix in string format
 			return networkAddress.getHostAddress() + "/" + Integer.toString(prefixLength);
-		} catch (UnknownHostException e)
+		}
+		catch (UnknownHostException e)
 		{
 			log.error("The IP address entered is not correct / Error obtaining the Network address");
 			throw new NetworkException(1, "Error al obtener la ruta de red");
 		}
 	}
 
+	/**
+	 * Method scanEquipo
+	 * @param equipo
+	 * @throws NetworkException
+	 */
 	public void scanEquipo(Equipo equipo) throws NetworkException
 	{
-		
+
 		try
 		{
 			String ip = equipo.getIp();
 			String comandoNmap = "nmap -Pn -O " + ip;
-			
+
 			String respuestaComandoNmap = executeCommand(comandoNmap);
-			
+
 			this.iparse.parseNmapPNO(equipo, respuestaComandoNmap);
 			obtainType(equipo);
-			try {
-				if(!equipo.getTipo().equals(Equipo.TIPO_IMPRESORA))
+			try
+			{
+				if (!equipo.getTipo().equals(Equipo.TIPO_IMPRESORA))
 				{
 					String comandoNetView = "net view " + ip;
 					String respuestaComandoNetView = executeCommand(comandoNetView);
-					this.iparse.parseNetView(equipo,respuestaComandoNetView);
+					this.iparse.parseNetView(equipo, respuestaComandoNetView);
 				}
 				else
 				{
 					log.info("El equipo es una impresora");
 				}
-			}catch (NetworkException exception) {
+			}
+			catch (NetworkException exception)
+			{
 				log.error("Error al escanear recursos " + equipo.getIp());
 			}
-			
-		}catch(NetworkException exception)
+
+		}
+		catch (NetworkException exception)
 		{
 			log.error("Error al escanear el equipo");
 			throw new NetworkException(1, exception.getMessage());
 		}
-		
-		
-		
+
 	}
 
+	/**
+	 * Method executeCommand
+	 * @param command
+	 * @return
+	 * @throws NetworkException
+	 */
 	public String executeCommand(String command) throws NetworkException
 	{
 		// Get the runtime
@@ -158,12 +186,14 @@ public class Utils implements IUtils
 				}
 			}
 
-		} catch (IOException exception)
+		}
+		catch (IOException exception)
 		{
 			// Log and throw an exception for IO errors
 			log.error("Error getting result", exception);
 			throw new NetworkException(2, "Error al obtener el resultado", exception);
-		} catch (InterruptedException e)
+		}
+		catch (InterruptedException e)
 		{
 			// Log and throw an exception for interruption errors
 			log.error("Interrupt error in command", e);
@@ -172,138 +202,137 @@ public class Utils implements IUtils
 		// Return the result of the command execution
 		return resultado;
 	}
-	
-	public void  executeNmapSN(Red red) throws NetworkException 
+
+	/**
+	 * Method insertRedes , Methos to insert Redes
+	 * 
+	 * @throws NetworkException
+	 */
+	public void insertRedes(Map<String, List<String>> map) throws NetworkException
 	{
-		String command="nmap -sn "+ red.getRutaRed();
-		try 
+
+		// Iteration on the map
+		for (Map.Entry<String, List<String>> entry : map.entrySet())
 		{
-			String content=this.executeCommand(command);
-			List<Equipo> equipos=this.iparse.parseoNmapSN(content);
-			
-			for(Equipo equipo : equipos)
+			String nameRed = entry.getKey();
+			List<String> subnetMask = entry.getValue();
+
+			try
 			{
-				equipo.setRed(red);
+				// Get the network path using the getNetworkAddress method
+				String rutaRed = getNetworkAddress(subnetMask.get(0), subnetMask.get(1));
+
+				// Create a Network Object
+				Red red = new Red();
+				red.setNombre(nameRed);
+				red.setRutaRed(rutaRed);
+
+				// Save the network to the database using the network repository
+				redRepository.saveAndFlush(red);
 			}
-			equipoRepository.saveAllAndFlush(equipos);
-		}
-		catch (NetworkException exception) {
-			String error ="Error al ejecutar nmap";
-			log.error(error,exception);
-			throw new NetworkException(2, error);
+			catch (NetworkException networkException)
+			{
+				networkException.printStackTrace();
+				// Log and throw an exception for interruption errors
+				log.error("Error inserting the network into the database", networkException);
+				throw networkException;
+			}
 		}
 	}
 
 	/**
-	 * Method insertRedes , Methos to insert Redes
-	 * @throws NetworkException 
-	 */
-	public void insertRedes(Map<String, List<String>> map) throws NetworkException 
-	{
-		
-		// Iteration on the map
-        for (Map.Entry<String, List<String>> entry : map.entrySet()) 
-        {
-            String nameRed = entry.getKey();
-            List<String> subnetMask  = entry.getValue();
-
-            try 
-            {
-            	// Get the network path using the getNetworkAddress method
-                String rutaRed = getNetworkAddress(subnetMask.get(0), subnetMask.get(1));
-
-                // Create a Network Object
-                Red red = new Red();
-                red.setNombre(nameRed);
-                red.setRutaRed(rutaRed);
-                
-                // Save the network to the database using the network repository
-                redRepository.saveAndFlush(red);
-            } 
-            catch (NetworkException networkException) 
-            {
-                networkException.printStackTrace();
-                // Log and throw an exception for interruption errors
-                log.error("Error inserting the network into the database", networkException);
-                throw networkException;
-            }
-        }
-    }
-	
-	/**
 	 * Method saveNetworks , Method for save all networks
-	 * @throws NetworkException 
+	 * 
+	 * @throws NetworkException
 	 */
-	public void saveNetworks() throws NetworkException 
+	public void saveNetworks() throws NetworkException
 	{
 		try
 		{
-			// Try to call executeComand to get the ipconfig string, and parse it with parseIpConfig, on the last, try to insert with insertRedes
+			// Try to call executeComand to get the ipconfig string, and parse it with
+			// parseIpConfig, on the last, try to insert with insertRedes
 			this.insertRedes(iparse.parseIpConfig(this.executeCommand("ipconfig")));
-			
+
 		}
 		catch (NetworkException exception)
 		{
 			// Log and throw an exception for interruption errors
 			log.error("Error on save network", exception);
 			throw exception;
-     }
+		}
 	}
 
-  /**
-	 * MÉTODO QUE PASANDOLE UN EQUIPO, IDENTIFIQUE EL TIPO DE EQUIPO
-	 * TIPOS POSIBLES:(PC O IMPRESORA)
+	/**
+	 * MÉTODO QUE PASANDOLE UN EQUIPO, IDENTIFIQUE EL TIPO DE EQUIPO TIPOS
+	 * POSIBLES:(PC O IMPRESORA)
+	 * 
 	 * @param equipo
 	 */
 	public void obtainType(Equipo equipo)
 	{
 		int i = 0;
-		while(i < equipo.getPuertos().size() && equipo.getTipo() == null)
+		while (i < equipo.getPuertos().size() && equipo.getTipo() == null)
 		{
-			//Si el número del puerto es el 9100, el 515 o el 631
-			if(equipo.getPuertos().get(i).getPuertoId().getNumero() == 9100 || equipo.getPuertos().get(i).getPuertoId().getNumero() == 515 || equipo.getPuertos().get(i).getPuertoId().getNumero() == 631)
+			// Si el número del puerto es el 9100, el 515 o el 631
+			if (equipo.getPuertos().get(i).getPuertoId().getNumero() == 9100
+					|| equipo.getPuertos().get(i).getPuertoId().getNumero() == 515
+					|| equipo.getPuertos().get(i).getPuertoId().getNumero() == 631)
 			{
-				//Será una impresora
+				// Será una impresora
 				equipo.setTipo(Equipo.TIPO_IMPRESORA);
 			}
 			i++;
 		}
-		
-		//Si no ha encontrado nada
-		if(equipo.getTipo() == null)
+
+		// Si no ha encontrado nada
+		if (equipo.getTipo() == null)
 		{
-			//Será un pc
+			// Será un pc
 			equipo.setTipo(Equipo.TIPO_STANDARD);
 		}
-		
+
 		this.equipoRepository.saveAndFlush(equipo);
 	}
-  
-  public void scanEquipos(Red red) throws NetworkException
+
+	/**
+	 * Method scanEquipos
+	 * @param red
+	 * @throws NetworkException
+	 */
+	public void scanEquipos(Red red) throws NetworkException
 	{
 		List<Equipo> equipos = this.equipoRepository.findByRed(red);
-		for (Equipo equipo : equipos) {
+		for (Equipo equipo : equipos)
+		{
 			this.scanEquipo(equipo);
 		}
 	}
-  
-  public void  executeNmapSN(Red red) throws NetworkException 
-	{
-		String command="nmap -sn "+ red.getRutaRed();
-		try 
-		{
-			String content=this.executeCommand(command);
-			List<Equipo> equipos=this.iparse.parseoNmapSN(content);
 
-			for(Equipo equipo : equipos)
+	/**
+	 * Method executeNmapSN
+	 * @param red
+	 * @throws NetworkException
+	 */
+	public void executeNmapSN(Red red) throws NetworkException
+	{
+		String command = "nmap -sn " + red.getRutaRed();
+
+		log.info("ESCANEANDO POSIBLES EQUIPOS EN RED -> " + red.getRutaRed() + "\n" + red.getNombre());
+		try
+		{
+			String content = this.executeCommand(command);
+			List<Equipo> equipos = this.iparse.parseoNmapSN(content);
+
+			for (Equipo equipo : equipos)
 			{
 				equipo.setRed(red);
 			}
 			equipoRepository.saveAllAndFlush(equipos);
 		}
-		catch (NetworkException exception) {
-			String error ="Error al ejecutar nmap";
-			log.error(error,exception);
+		catch (NetworkException exception)
+		{
+			String error = "Error al ejecutar nmap";
+			log.error(error, exception);
 			throw new NetworkException(2, error);
 		}
 	}
