@@ -29,5 +29,6 @@ Solamente se necesita descargar el proyecto y compilarlo.
 # ENDPOINTS
 Existe un endpoint el cual nos brindará toda la información del escaneo en el momento de llamarlo:
 ```bash
-[nmap -sn <ip>](http://localhost:8080/net/get/all/data)http://localhost:8080/net/get/all/data
+http://localhost:8080/net/get/all/data
 ```
+Este responderá con un listado de objetos Red con todos sus equipos y cada equipo con su información propia (En formato JSON)
