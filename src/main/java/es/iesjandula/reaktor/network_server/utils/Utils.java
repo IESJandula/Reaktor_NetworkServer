@@ -5,6 +5,7 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.List;
 import java.util.Map;
+
 import java.util.Scanner;
 
 import org.apache.logging.log4j.LogManager;
@@ -19,7 +20,6 @@ import es.iesjandula.reaktor.network_server.models.Equipo;
 import es.iesjandula.reaktor.network_server.models.Red;
 import es.iesjandula.reaktor.network_server.repository.IEquipoRepository;
 import es.iesjandula.reaktor.network_server.repository.IRedRepository;
-
 
 @Service
 public class Utils implements IUtils
@@ -173,6 +173,27 @@ public class Utils implements IUtils
 		return resultado;
 	}
 	
+	public void  executeNmapSN(Red red) throws NetworkException 
+	{
+		String command="nmap -sn "+ red.getRutaRed();
+		try 
+		{
+			String content=this.executeCommand(command);
+			List<Equipo> equipos=this.iparse.parseoNmapSN(content);
+			
+			for(Equipo equipo : equipos)
+			{
+				equipo.setRed(red);
+			}
+			equipoRepository.saveAllAndFlush(equipos);
+		}
+		catch (NetworkException exception) {
+			String error ="Error al ejecutar nmap";
+			log.error(error,exception);
+			throw new NetworkException(2, error);
+		}
+	}
+
 	/**
 	 * Method insertRedes , Methos to insert Redes
 	 * @throws NetworkException 
@@ -286,5 +307,4 @@ public class Utils implements IUtils
 			throw new NetworkException(2, error);
 		}
 	}
-  
 }

@@ -2,6 +2,7 @@ package es.iesjandula.reaktor.network_server.parser;
 
 import java.util.HashMap;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -11,7 +12,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
 
 import es.iesjandula.reaktor.network_server.exception.NetworkException;
 import es.iesjandula.reaktor.network_server.interfaces.Iparser;
@@ -30,6 +30,7 @@ import es.iesjandula.reaktor.network_server.repository.IPuertoRepository;
 @Service
 public class Parser implements Iparser
 {
+	
 	/**Logger de la clase */
 	private static Logger log = LogManager.getLogger();
 	@Autowired
@@ -107,6 +108,7 @@ public class Parser implements Iparser
 	 * @param String (busqueda del Nmap)
 	 * @return List<Equipos>
 	 */
+	
 	public List<Equipo> parseoNmapSN(String content)
 	{
 		// Lista de equipos a delvolver
@@ -157,6 +159,7 @@ public class Parser implements Iparser
 		}
 		scanner.close();
 		return equipos;
+		
 	}
 
 	/**
