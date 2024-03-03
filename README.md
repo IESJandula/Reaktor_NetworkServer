@@ -14,7 +14,7 @@ Este proyecto se basa en Java 17 y aunque luego será capaz de scanear todo tipo
 
 Se necesita tener Mysql instalado.
 
-### REQUISITO PRE-INSTALACIÓN
+### REQUISITOS PRE-INSTALACIÓN
 Este proyecto utiliza la herramienta nmap , y hace uso interno de comandos como:
 ```bash
 nmap -sn <ip>
