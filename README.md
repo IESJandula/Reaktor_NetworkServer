@@ -40,6 +40,6 @@ http://localhost:8080/swagger-ui/index.html
 ```
 Este nos proporcionará el documento yaml que podemos visualizar en la web del endpoint anterior
 ```bash
-http://localhost:8080/swagger-ui/index.html](http://localhost:8084/api-docs.yaml
+http://localhost:8084/api-docs.yaml
 ```
 
