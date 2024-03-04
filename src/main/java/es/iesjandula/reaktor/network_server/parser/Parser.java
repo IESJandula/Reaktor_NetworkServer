@@ -175,7 +175,7 @@ public class Parser implements IParser
 
 	/**
 	 * Metodo que comprueba el contenido de la sentencia del comando de ipconfig que
-	 * contenga la palavra 'Máscara de subred' en distintos casos
+	 * contenga la palabra 'Máscara de subred' en distintos casos
 	 *
 	 * @param  sentencia
 	 * @return           false o true depende de si lo ha encontrado o no
