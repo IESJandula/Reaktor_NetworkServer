@@ -10,7 +10,7 @@ Se puede diferenciar entre diferentes tipos de objetos a escanear:
 > Puertos: Son aquellos que nos brindan el numero de puerto TCP o UDP existentes, contienen el número de puerto, el nombre del servicio al cual el puerto está asociado y mediante el tipo de puerto, podremos discriminar objetos equipos STANDARD o IMPRESORA.
 
 # REQUISITOS
-Este proyecto se basa en Java 17 y aunque luego será capaz de scanear todo tipo de equipos, solamente se puede ejecutar windows 10.
+Este proyecto se basa en Java 17 y aunque luego será capaz de scanear todo tipo de equipos, solamente se puede ejecutar en windows 10.
 
 Se necesita tener Mysql instalado.
 
