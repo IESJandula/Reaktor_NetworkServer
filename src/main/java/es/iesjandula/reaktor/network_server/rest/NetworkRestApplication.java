@@ -1,6 +1,5 @@
 package es.iesjandula.reaktor.network_server.rest;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.logging.log4j.LogManager;
