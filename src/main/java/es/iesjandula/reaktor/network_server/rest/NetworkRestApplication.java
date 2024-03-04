@@ -32,7 +32,7 @@ public class NetworkRestApplication
 	 * @return List<Red>
 	 */
 	@Operation
-	@RequestMapping(method = RequestMethod.GET, value = "/get/all/data")
+	@RequestMapping(method = RequestMethod.GET, value = "/get/all/data",produces="application/json")
 	public ResponseEntity<List<Red>> getScanData()
 	{
 		try

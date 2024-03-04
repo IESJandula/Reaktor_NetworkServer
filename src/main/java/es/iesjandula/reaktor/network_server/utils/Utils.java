@@ -98,7 +98,7 @@ public class Utils implements IUtils
 			// Return the network address and subnet mask prefix in string format
 			return networkAddress.getHostAddress() + "/" + Integer.toString(prefixLength);
 		}
-		catch (UnknownHostException e)
+		catch (UnknownHostException excepetion)
 		{
 			log.error("The IP address entered is not correct / Error obtaining the Network address");
 			throw new NetworkException(1, "Error al obtener la ruta de red");
@@ -198,11 +198,11 @@ public class Utils implements IUtils
 			log.error("Error getting result", exception);
 			throw new NetworkException(2, "Error al obtener el resultado", exception);
 		}
-		catch (InterruptedException e)
+		catch (InterruptedException excepetion)
 		{
 			// Log and throw an exception for interruption errors
-			log.error("Interrupt error in command", e);
-			throw new NetworkException(3, "Error de interrupcion en el comando", e);
+			log.error("Interrupt error in command", excepetion);
+			throw new NetworkException(3, "Error de interrupcion en el comando", excepetion);
 		}
 		// Return the result of the command execution
 		return resultado;

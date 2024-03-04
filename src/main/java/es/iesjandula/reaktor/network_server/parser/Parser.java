@@ -107,7 +107,7 @@ public class Parser implements IParser
 				map2.put(entry.getKey(), entry.getValue());
 			}
 		}
-		Parser.log.info("Parseo de informacion del comando ipconfig finalizado");
+		log.info("Parseo de informacion del comando ipconfig finalizado");
 		return map2;
 	}
 
@@ -341,7 +341,6 @@ public class Parser implements IParser
 		Map<String, String> temporalMap = new HashMap<String, String>();
 
 		// Definir el patrón de búsqueda para el nombre y la dirección física
-		// Definir el patrón de búsqueda para el nombre y la dirección física
 		Pattern pattern = Pattern.compile("\\s+[Direcci�n f�sica Dirección física]\\s+:\\s+([a-zA-Z0-9\\:]+)\\n.+\\n\\s+SSID\\s+:\\s+([a-zA-Z0-9\\+ \\.\\-:]+)");
 
 		// Crear un objeto Matcher con la salida del comando
@@ -352,16 +351,15 @@ public class Parser implements IParser
 		{
 			String nombre = matcher.group(2);
 			String direccionFisica = matcher.group(1);
-			Parser.log.info("SSID: " + nombre);
-			Parser.log.info("Dirección física: " + direccionFisica);
-			Parser.log.info("---------------");
+			log.info("SSID: " + nombre);
+			log.info("Dirección física: " + direccionFisica);
 
 			// ADD to map
 			temporalMap.put(matcher.group(1), matcher.group(2));
 
 		}
 
-		Parser.log.info(temporalMap);
+		log.info(temporalMap);
 
 		return temporalMap;
 	}
