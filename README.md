@@ -28,17 +28,18 @@ Solamente se necesita descargar el proyecto y compilarlo.
 
 # ENDPOINTS
 Existen varios endpoints:
+
+Este responderá con un listado de objetos Red con todos sus equipos y cada equipo con su información propia (En formato JSON)
 ```bash
 http://localhost:8080/net/get/all/data
 ```
-Este responderá con un listado de objetos Red con todos sus equipos y cada equipo con su información propia (En formato JSON)
 
+Este nos redireccionará a una web donde podremos ver la documentación swagger.
 ```bash
 http://localhost:8080/swagger-ui/index.html
 ```
-Este nos redireccionará a una web donde podremos ver la documentación swagger.
-
+Este nos proporcionará el documento yaml que podemos visualizar en la web del endpoint anterior
 ```bash
 http://localhost:8080/swagger-ui/index.html](http://localhost:8084/api-docs.yaml
 ```
-Este nos proporcionará el documento yaml que podemos visualizar en la web del endpoint anterior
+
