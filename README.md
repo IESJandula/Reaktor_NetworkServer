@@ -27,6 +27,7 @@ Crear la base de datos network_server vacía en Mysql, para que pueda arrancar e
 Solamente se necesita descargar el proyecto y compilarlo.
 
 # ENDPOINTS
+### Baasados en el puerto 8080
 Existen varios endpoints:
 
 Este responderá con un listado de objetos Red con todos sus equipos y cada equipo con su información propia (En formato JSON)
@@ -40,6 +41,6 @@ http://localhost:8080/swagger-ui/index.html
 ```
 Este nos proporcionará el documento yaml que podemos visualizar en la web del endpoint anterior
 ```bash
-http://localhost:8084/api-docs.yaml
+http://localhost:8080/api-docs.yaml
 ```
 
