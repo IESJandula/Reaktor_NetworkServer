@@ -38,4 +38,10 @@ public interface IParser
 	 */
 	public void parseNmapPNO(Equipo equipo, String content);
 	
+	/**
+	 * Method parseWlanNames
+	 * @return Map<String,String> map with MAC , and connection name
+	 */
+	public Map<String,String> parseWlanNames(String content);
+	
 }

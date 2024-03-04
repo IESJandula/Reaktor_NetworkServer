@@ -6,6 +6,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -87,6 +89,12 @@ public class Parser implements IParser
 				datosConf.add(splitInfo[1].trim());
 				map.put(keySentencia, datosConf);
 			}
+			else if (sentencia.contains("Direcc"))
+			{
+				String[] splitInfo = sentencia.split(":");
+				datosConf.add(splitInfo[1].trim()); 
+				map.put(keySentencia, datosConf);
+			}
 
 		}
 		// Por ultimo eliminamos las claves que estan vacias para quedarnos solo
@@ -94,7 +102,8 @@ public class Parser implements IParser
 		Map<String, List<String>> map2 = new HashMap<>();
 		for (Map.Entry<String, List<String>> entry : map.entrySet())
 		{
-			if (!entry.getValue().isEmpty())
+			// ADD EXLUSION POR SIZE DE LA LISTA (PARA SACAR MAC)
+			if (!entry.getValue().isEmpty() && entry.getValue().size()>1)
 			{
 				map2.put(entry.getKey(), entry.getValue());
 			}
@@ -315,4 +324,44 @@ public class Parser implements IParser
 		scanner.close();
 		this.iEquipoRepository.saveAndFlush(equipo);
 	}
+	
+	/**
+	 * Method parseWlanNames
+	 * @return Map<String,String> map with MAC , and connection name
+	 */
+	public Map<String,String> parseWlanNames(String content)
+	{
+		Map temporalMap = new HashMap<String,String>();
+		
+		// Definir el patrón de búsqueda para el nombre y la dirección física
+		// Definir el patrón de búsqueda para el nombre y la dirección física
+		Pattern pattern = Pattern.compile("\\s+[Direcci�n f�sica Dirección física]\\s+:\\s+([a-zA-Z0-9\\:]+)\\n.+\\n\\s+SSID\\s+:\\s+([a-zA-Z0-9\\+ \\.\\-:]+)");
+
+        // Crear un objeto Matcher con la salida del comando
+        Matcher matcher = pattern.matcher(content);
+
+        // Buscar e imprimir coincidencias
+        while (matcher.find()) {
+            String nombre = matcher.group(1);
+            String direccionFisica = matcher.group(2);
+            log.info("SSID: " + nombre);
+            log.info("Dirección física: " + direccionFisica);
+            log.info("---------------");
+            
+            // ADD to map
+            temporalMap.put(matcher.group(1), matcher.group(2));
+            
+        }
+        
+        log.info(temporalMap);
+		
+		return temporalMap;
+	}
+	
+	
+	
+	
+	
+	
+	
 }

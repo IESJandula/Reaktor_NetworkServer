@@ -216,16 +216,33 @@ public class Utils implements IUtils
 		{
 			String nameRed = entry.getKey();
 			List<String> subnetMask = entry.getValue();
+			
+			// REPLACE VALUES FROM IPCONFIG -ALL
+			for(int i =0;i<subnetMask.size();i++) 
+			{
+				String string = subnetMask.get(i).replace("(Preferido)", "");
+				subnetMask.set(i, string);
+			}
 
+			Map<String,String> wlanNamesMap = this.iparse.parseWlanNames(this.executeCommand("netsh wlan show interfaces"));
 			try
 			{
 				// Get the network path using the getNetworkAddress method
-				String rutaRed = getNetworkAddress(subnetMask.get(0), subnetMask.get(1));
+				String rutaRed = this.getNetworkAddress(subnetMask.get(1), subnetMask.get(2));
 
 				// Create a Network Object
 				Red red = new Red();
 				red.setNombre(nameRed);
 				red.setRutaRed(rutaRed);
+				red.setMac(subnetMask.get(0));
+				
+				String filtredMac = red.getMac().replace("-", ":").toLowerCase();
+				if(wlanNamesMap.containsKey(filtredMac)) 
+				{
+					red.setWlanConectionName(wlanNamesMap.get(red.getMac().replace("-", ":").toLowerCase()));
+				}
+				
+				
 
 				// Save the network to the database using the network repository
 				redRepository.saveAndFlush(red);
@@ -251,7 +268,7 @@ public class Utils implements IUtils
 		{
 			// Try to call executeComand to get the ipconfig string, and parse it with
 			// parseIpConfig, on the last, try to insert with insertRedes
-			this.insertRedes(iparse.parseIpConfig(this.executeCommand("ipconfig")));
+			this.insertRedes(iparse.parseIpConfig(this.executeCommand("ipconfig -all")));
 
 		}
 		catch (NetworkException exception)

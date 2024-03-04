@@ -36,6 +36,18 @@ public class Red implements Serializable
 	private String nombre;
 	
 	/**
+     * Attribute - Mac de red
+     */
+	@Column
+	private String mac;
+	
+	/**
+     * Attribute - Nombre de la conexion wlans solamente
+     */
+	@Column
+	private String wlanConectionName;
+	
+	/**
      * Attribute - Ruta de red
      */
 	@Column

@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import es.iesjandula.reaktor.network_server.models.Red;
 import es.iesjandula.reaktor.network_server.repository.IRedRepository;
+import io.swagger.v3.oas.annotations.Operation;
 
 @RestController
 @RequestMapping("/net")
@@ -28,6 +29,7 @@ public class NetworkRestApplication
 	 * Method getScanData get all the data
 	 * @return List<Red>
 	 */
+	@Operation
 	@RequestMapping(method = RequestMethod.GET,value = "/get/all/data")
 	public ResponseEntity<List<Red>> getScanData()
 	{
