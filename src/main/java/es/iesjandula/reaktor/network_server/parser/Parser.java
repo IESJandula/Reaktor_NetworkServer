@@ -342,8 +342,8 @@ public class Parser implements IParser
 
         // Buscar e imprimir coincidencias
         while (matcher.find()) {
-            String nombre = matcher.group(1);
-            String direccionFisica = matcher.group(2);
+            String nombre = matcher.group(2);
+            String direccionFisica = matcher.group(1);
             log.info("SSID: " + nombre);
             log.info("Dirección física: " + direccionFisica);
             log.info("---------------");

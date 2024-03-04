@@ -224,6 +224,7 @@ public class Utils implements IUtils
 				subnetMask.set(i, string);
 			}
 
+			// GETTING VALUES FROM POSSIBLE WLANS CONECTION NAMES (SSID BY MAC)
 			Map<String,String> wlanNamesMap = this.iparse.parseWlanNames(this.executeCommand("netsh wlan show interfaces"));
 			try
 			{
@@ -234,12 +235,18 @@ public class Utils implements IUtils
 				Red red = new Red();
 				red.setNombre(nameRed);
 				red.setRutaRed(rutaRed);
+				
+				// SET MAC
 				red.setMac(subnetMask.get(0));
 				
+				// GETTING THE FILTERED MAC
 				String filtredMac = red.getMac().replace("-", ":").toLowerCase();
+				
+				// IF MAP CONTAINS THE MAC , 
 				if(wlanNamesMap.containsKey(filtredMac)) 
 				{
-					red.setWlanConectionName(wlanNamesMap.get(red.getMac().replace("-", ":").toLowerCase()));
+					// SET THE VALUE OF THE SSID ASSOCIATED
+					red.setWlanConectionName(wlanNamesMap.get(filtredMac));
 				}
 				
 				
