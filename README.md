@@ -45,9 +45,9 @@ Este nos proporcionará el documento yaml que podemos visualizar en la web del e
 ```bash
 http://localhost:8080/api-docs.yaml
 ```
-# BBDD
+# 🏦 BBDD 🏦
 Como se ha comentado en apartados anteriores, se utiliza una bbdd de Mysql llamada network_server.
-### MER
+### 🔰 MER 🔰
 ![NetworkDatabase](https://github.com/IESJandula/Reaktor_NetworkServer/assets/120125881/21639192-5e76-4c4b-a2d6-59cc0ed4b890)
 Esta base de datos está compuesta por cuatro tablas, Red, Equipo, Recurso y Puerto.
 
