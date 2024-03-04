@@ -57,5 +57,5 @@ Esta base de datos está compuesta por cuatro tablas, Red, Equipo, Recurso y Pue
 >La tabla Equipo está formada por su Id (Clave primaria), el Sistema Operativo de ese equipo, su dirección Ip, su Mac, el tipo de equipo (Impresora o PC) y la Id de la Red (Clave foránea).
 >Equipo a su vez tiene una relación 1 a muchos con Recurso y Puerto.
 
->La tabla recurso está formada por el Id del equipo (Clave primaria), un número autogenerado (Clave primaria) y el nombre del recurso.
+>La tabla Recurso está formada por el Id del equipo (Clave primaria), un número autogenerado (Clave primaria) y el nombre del recurso.
 >la tabla Puerto está formada por el Id del equipo (Clave primaria), el número del puerto (Clave primaria) y el nombre del puerto.
