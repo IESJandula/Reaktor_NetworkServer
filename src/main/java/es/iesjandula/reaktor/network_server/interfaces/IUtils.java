@@ -40,6 +40,15 @@ public interface IUtils
 	 * @throws NetworkException
 	 */
 	public String executeCommand(String command) throws NetworkException;
+	
+	
+	/**
+	 * Method executeCommandNonWait
+	 * @param command
+	 * @return
+	 * @throws NetworkException
+	 */
+	public String executeCommandNonWait(String command) throws NetworkException;
 
 	/**
 	 * Method insertRedes

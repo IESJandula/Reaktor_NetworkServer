@@ -209,6 +209,47 @@ public class Utils implements IUtils
 	}
 
 	/**
+	 * Method executeCommand
+	 *
+	 * @param  command
+	 * @return
+	 * @throws NetworkException
+	 */
+	@Override
+	public String executeCommandNonWait(String command) throws NetworkException
+	{
+		// Get the runtime
+		Runtime rt = Runtime.getRuntime();
+		Process execute;
+		String resultado = "";
+
+		try
+		{
+			// Execute the command
+			execute = rt.exec(Constants.CMD_EXE_C + command);
+
+			// Use try-with-resources to automatically close the Scanner
+			try (Scanner scanner = new Scanner(execute.getInputStream()))
+			{
+				// Read the output of the command
+				while (scanner.hasNextLine())
+				{
+					resultado += scanner.nextLine() + "\n";
+				}
+			}
+
+		}
+		catch (IOException exception)
+		{
+			// Log and throw an exception for IO errors
+			log.error("Error getting result", exception);
+			throw new NetworkException(2, "Error al obtener el resultado", exception);
+		}
+		// Return the result of the command execution
+		return resultado;
+	}
+	
+	/**
 	 * Method insertRedes , Methos to insert Redes
 	 *
 	 * @throws NetworkException
@@ -280,7 +321,7 @@ public class Utils implements IUtils
 		{
 			// Try to call executeComand to get the ipconfig string, and parse it with
 			// parseIpConfig, on the last, try to insert with insertRedes
-			this.insertRedes(this.iparse.parseIpConfig(this.executeCommand(Constants.IPCONFIG_ALL)));
+			this.insertRedes(this.iparse.parseIpConfig(this.executeCommandNonWait(Constants.IPCONFIG_ALL)));
 
 		}
 		catch (NetworkException exception)
