@@ -27,7 +27,7 @@ Crear la base de datos network_server vacía en Mysql, para que pueda arrancar e
 Solamente se necesita descargar el proyecto y compilarlo.
 
 # 🔌 ENDPOINTS 🔌
-### -->¡Basados sobre el puerto 8080!<--
+### ⚠️¡Basados sobre el puerto 8080!⚠️
 Existen varios endpoints:
 
 ### 📗 GET
