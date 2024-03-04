@@ -5,7 +5,6 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.List;
 import java.util.Map;
-
 import java.util.Scanner;
 
 import org.apache.logging.log4j.LogManager;
@@ -13,9 +12,10 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import es.iesjandula.reaktor.network_server.constants.Constants;
 import es.iesjandula.reaktor.network_server.exception.NetworkException;
-import es.iesjandula.reaktor.network_server.interfaces.IUtils;
 import es.iesjandula.reaktor.network_server.interfaces.IParser;
+import es.iesjandula.reaktor.network_server.interfaces.IUtils;
 import es.iesjandula.reaktor.network_server.models.Equipo;
 import es.iesjandula.reaktor.network_server.models.Red;
 import es.iesjandula.reaktor.network_server.repository.IEquipoRepository;
@@ -24,7 +24,6 @@ import es.iesjandula.reaktor.network_server.repository.IRedRepository;
 @Service
 public class Utils implements IUtils
 {
-
 	/** Attribute iparse */
 	@Autowired
 	private IParser iparse;
@@ -50,11 +49,13 @@ public class Utils implements IUtils
 
 	/**
 	 * Method getNetworkAddress
-	 * @param ipAddress
-	 * @param subnetMask
+	 *
+	 * @param  ipAddress
+	 * @param  subnetMask
 	 * @return
 	 * @throws NetworkException
 	 */
+	@Override
 	public String getNetworkAddress(String ipAddress, String subnetMask) throws NetworkException
 	{
 		// Convert the IP and subnet mask strings to InetAddress objects
@@ -106,27 +107,29 @@ public class Utils implements IUtils
 
 	/**
 	 * Method scanEquipo
-	 * @param equipo
+	 *
+	 * @param  equipo
 	 * @throws NetworkException
 	 */
+	@Override
 	public void scanEquipo(Equipo equipo) throws NetworkException
 	{
 
 		try
 		{
 			String ip = equipo.getIp();
-			String comandoNmap = "nmap -Pn -O " + ip;
+			String comandoNmap = Constants.NMAP_PN_O + ip;
 
-			String respuestaComandoNmap = executeCommand(comandoNmap);
+			String respuestaComandoNmap = this.executeCommand(comandoNmap);
 
 			this.iparse.parseNmapPNO(equipo, respuestaComandoNmap);
-			obtainType(equipo);
+			this.obtainType(equipo);
 			try
 			{
 				if (!equipo.getTipo().equals(Equipo.TIPO_IMPRESORA))
 				{
-					String comandoNetView = "net view " + ip;
-					String respuestaComandoNetView = executeCommand(comandoNetView);
+					String comandoNetView = Constants.NET_VIEW + ip;
+					String respuestaComandoNetView = this.executeCommand(comandoNetView);
 					this.iparse.parseNetView(equipo, respuestaComandoNetView);
 				}
 				else
@@ -150,10 +153,12 @@ public class Utils implements IUtils
 
 	/**
 	 * Method executeCommand
-	 * @param command
+	 *
+	 * @param  command
 	 * @return
 	 * @throws NetworkException
 	 */
+	@Override
 	public String executeCommand(String command) throws NetworkException
 	{
 		// Get the runtime
@@ -164,7 +169,7 @@ public class Utils implements IUtils
 		try
 		{
 			// Execute the command
-			execute = rt.exec("cmd.exe /c " + command);
+			execute = rt.exec(Constants.CMD_EXE_C + command);
 
 			// Use try-with-resources to automatically close the Scanner
 			try (Scanner scanner = new Scanner(execute.getInputStream()))
@@ -205,9 +210,10 @@ public class Utils implements IUtils
 
 	/**
 	 * Method insertRedes , Methos to insert Redes
-	 * 
+	 *
 	 * @throws NetworkException
 	 */
+	@Override
 	public void insertRedes(Map<String, List<String>> map) throws NetworkException
 	{
 
@@ -216,16 +222,16 @@ public class Utils implements IUtils
 		{
 			String nameRed = entry.getKey();
 			List<String> subnetMask = entry.getValue();
-			
+
 			// REPLACE VALUES FROM IPCONFIG -ALL
-			for(int i =0;i<subnetMask.size();i++) 
+			for (int i = 0; i < subnetMask.size(); i++)
 			{
-				String string = subnetMask.get(i).replace("(Preferido)", "");
+				String string = subnetMask.get(i).replace(Constants.PREFERIDO, "");
 				subnetMask.set(i, string);
 			}
 
 			// GETTING VALUES FROM POSSIBLE WLANS CONECTION NAMES (SSID BY MAC)
-			Map<String,String> wlanNamesMap = this.iparse.parseWlanNames(this.executeCommand("netsh wlan show interfaces"));
+			Map<String, String> wlanNamesMap = this.iparse.parseWlanNames(this.executeCommand(Constants.NETSH_WLAN_SHOW_INTERFACES));
 			try
 			{
 				// Get the network path using the getNetworkAddress method
@@ -235,24 +241,22 @@ public class Utils implements IUtils
 				Red red = new Red();
 				red.setNombre(nameRed);
 				red.setRutaRed(rutaRed);
-				
+
 				// SET MAC
 				red.setMac(subnetMask.get(0));
-				
+
 				// GETTING THE FILTERED MAC
 				String filtredMac = red.getMac().replace("-", ":").toLowerCase();
-				
-				// IF MAP CONTAINS THE MAC , 
-				if(wlanNamesMap.containsKey(filtredMac)) 
+
+				// IF MAP CONTAINS THE MAC ,
+				if (wlanNamesMap.containsKey(filtredMac))
 				{
 					// SET THE VALUE OF THE SSID ASSOCIATED
 					red.setWlanConectionName(wlanNamesMap.get(filtredMac));
 				}
-				
-				
 
 				// Save the network to the database using the network repository
-				redRepository.saveAndFlush(red);
+				this.redRepository.saveAndFlush(red);
 			}
 			catch (NetworkException networkException)
 			{
@@ -266,16 +270,17 @@ public class Utils implements IUtils
 
 	/**
 	 * Method saveNetworks , Method for save all networks
-	 * 
+	 *
 	 * @throws NetworkException
 	 */
+	@Override
 	public void saveNetworks() throws NetworkException
 	{
 		try
 		{
 			// Try to call executeComand to get the ipconfig string, and parse it with
 			// parseIpConfig, on the last, try to insert with insertRedes
-			this.insertRedes(iparse.parseIpConfig(this.executeCommand("ipconfig -all")));
+			this.insertRedes(this.iparse.parseIpConfig(this.executeCommand(Constants.IPCONFIG_ALL)));
 
 		}
 		catch (NetworkException exception)
@@ -289,18 +294,18 @@ public class Utils implements IUtils
 	/**
 	 * MÉTODO QUE PASANDOLE UN EQUIPO, IDENTIFIQUE EL TIPO DE EQUIPO TIPOS
 	 * POSIBLES:(PC O IMPRESORA)
-	 * 
+	 *
 	 * @param equipo
 	 */
 	public void obtainType(Equipo equipo)
 	{
 		int i = 0;
-		while (i < equipo.getPuertos().size() && equipo.getTipo() == null)
+		while ((i < equipo.getPuertos().size()) && (equipo.getTipo() == null))
 		{
 			// Si el número del puerto es el 9100, el 515 o el 631
-			if (equipo.getPuertos().get(i).getPuertoId().getNumero() == 9100
-					|| equipo.getPuertos().get(i).getPuertoId().getNumero() == 515
-					|| equipo.getPuertos().get(i).getPuertoId().getNumero() == 631)
+			if ((equipo.getPuertos().get(i).getPuertoId().getNumero() == 9100)
+					|| (equipo.getPuertos().get(i).getPuertoId().getNumero() == 515)
+					|| (equipo.getPuertos().get(i).getPuertoId().getNumero() == 631))
 			{
 				// Será una impresora
 				equipo.setTipo(Equipo.TIPO_IMPRESORA);
@@ -320,9 +325,11 @@ public class Utils implements IUtils
 
 	/**
 	 * Method scanEquipos
-	 * @param red
+	 *
+	 * @param  red
 	 * @throws NetworkException
 	 */
+	@Override
 	public void scanEquipos(Red red) throws NetworkException
 	{
 		List<Equipo> equipos = this.equipoRepository.findByRed(red);
@@ -334,12 +341,14 @@ public class Utils implements IUtils
 
 	/**
 	 * Method executeNmapSN
-	 * @param red
+	 *
+	 * @param  red
 	 * @throws NetworkException
 	 */
+	@Override
 	public void executeNmapSN(Red red) throws NetworkException
 	{
-		String command = "nmap -sn " + red.getRutaRed();
+		String command = Constants.NMAP_SN + red.getRutaRed();
 
 		log.info("ESCANEANDO POSIBLES EQUIPOS EN RED -> " + red.getRutaRed() + "\n" + red.getNombre());
 		try
@@ -351,7 +360,7 @@ public class Utils implements IUtils
 			{
 				equipo.setRed(red);
 			}
-			equipoRepository.saveAllAndFlush(equipos);
+			this.equipoRepository.saveAllAndFlush(equipos);
 		}
 		catch (NetworkException exception)
 		{

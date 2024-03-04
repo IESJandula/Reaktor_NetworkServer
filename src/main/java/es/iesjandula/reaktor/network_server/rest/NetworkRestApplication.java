@@ -1,5 +1,6 @@
 package es.iesjandula.reaktor.network_server.rest;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.logging.log4j.LogManager;
@@ -16,26 +17,37 @@ import io.swagger.v3.oas.annotations.Operation;
 
 @RestController
 @RequestMapping("/net")
-public class NetworkRestApplication 
+public class NetworkRestApplication
 {
-	/** Attribute iRedRepository*/
+	/** Attribute iRedRepository */
 	@Autowired
 	private IRedRepository iRedRepository;
-	
-	/**Logger de la clase */
+
+	/** Logger de la clase */
 	private static Logger log = LogManager.getLogger();
-	
+
 	/**
 	 * Method getScanData get all the data
+	 *
 	 * @return List<Red>
 	 */
 	@Operation
-	@RequestMapping(method = RequestMethod.GET,value = "/get/all/data")
+	@RequestMapping(method = RequestMethod.GET, value = "/get/all/data")
 	public ResponseEntity<List<Red>> getScanData()
 	{
-		List<Red> allDataList = this.iRedRepository.findAll();
-		//log.info(allDataList);
-		return ResponseEntity.ok().body(allDataList);
+		try
+		{
+			// GET ALL RED LIST
+			List<Red> allDataList = this.iRedRepository.findAll();
+			return ResponseEntity.ok().body(allDataList);
+		}
+		catch (Exception exception)
+		{
+			// IF ANY ERROR , RETURNS EMPTY LIST (FOR THE SWAGGER EXAMPLES)
+			String error = "Error getting the info";
+			log.error(error, exception);
+			return ResponseEntity.status(500).body(new ArrayList<>());
+		}
+
 	}
 }
-		

@@ -23,19 +23,22 @@ import lombok.NoArgsConstructor;
 @Table(name = "recurso")
 public class Recurso implements Serializable
 {
+	/** Attribute serialVersionUID*/
+	private static final long serialVersionUID = -650220670319936839L;
+
 	/**
-     * Attribute - Numero de recurso
-     */
+	 * Attribute - Numero de recurso
+	 */
 	@EmbeddedId
 	private RecursoId recursoId;
-	
+
 	/**
-     * Attribute - Nombre del recurso
-     */
+	 * Attribute - Nombre del recurso
+	 */
 	@Column
 	private String nombre;
-	
-	/** Attribute equipo*/
+
+	/** Attribute equipo */
 	@ManyToOne
 	@JsonIgnore
 	@MapsId("idEquipo")

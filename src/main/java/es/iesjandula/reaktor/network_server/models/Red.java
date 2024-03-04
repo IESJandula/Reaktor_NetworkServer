@@ -21,39 +21,42 @@ import lombok.NoArgsConstructor;
 @Table(name = "red")
 public class Red implements Serializable
 {
+	/** Attribute serialVersionUID */
+	private static final long serialVersionUID = -1686157942189219531L;
+
 	/**
-     * Attribute - Id de red
-     */
+	 * Attribute - Id de red
+	 */
 	@Id
 	@GeneratedValue
 	@Column
 	private Long id;
-	
+
 	/**
-     * Attribute - Nombre de red
-     */
+	 * Attribute - Nombre de red
+	 */
 	@Column
 	private String nombre;
-	
+
 	/**
-     * Attribute - Mac de red
-     */
+	 * Attribute - Mac de red
+	 */
 	@Column
 	private String mac;
-	
+
 	/**
-     * Attribute - Nombre de la conexion wlans solamente
-     */
+	 * Attribute - Nombre de la conexion wlans solamente
+	 */
 	@Column
 	private String wlanConectionName;
-	
+
 	/**
-     * Attribute - Ruta de red
-     */
+	 * Attribute - Ruta de red
+	 */
 	@Column
 	private String rutaRed;
-	
-	/** Attribute equipos*/
+
+	/** Attribute equipos */
 	@OneToMany(mappedBy = "red")
 	private List<Equipo> equipos;
 }

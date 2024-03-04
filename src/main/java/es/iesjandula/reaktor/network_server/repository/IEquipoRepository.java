@@ -15,7 +15,8 @@ public interface IEquipoRepository extends JpaRepository<Equipo, Long>
 {
 	/**
 	 * Method findByRed
-	 * @param red
+	 * 
+	 * @param  red
 	 * @return
 	 */
 	public List<Equipo> findByRed(Red red);

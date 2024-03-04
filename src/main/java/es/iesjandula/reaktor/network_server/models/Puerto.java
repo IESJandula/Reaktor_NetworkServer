@@ -23,19 +23,22 @@ import lombok.NoArgsConstructor;
 @Table(name = "puerto")
 public class Puerto implements Serializable
 {
+	/** Attribute serialVersionUID*/
+	private static final long serialVersionUID = -3125746195750824463L;
+
 	/**
-     * Attribute - Puerto Id
-     */
+	 * Attribute - Puerto Id
+	 */
 	@EmbeddedId
 	private PuertoId puertoId;
-	
+
 	/**
-     * Attribute - Nombre del puerto
-     */
+	 * Attribute - Nombre del puerto
+	 */
 	@Column
 	private String nombre;
-	
-	/** Attribute equipo*/
+
+	/** Attribute equipo */
 	@ManyToOne
 	@MapsId("idEquipo")
 	@JsonIgnore

@@ -25,23 +25,22 @@ import es.iesjandula.reaktor.network_server.repository.IEquipoRepository;
 import es.iesjandula.reaktor.network_server.repository.IPuertoRepository;
 import es.iesjandula.reaktor.network_server.repository.IRecursoRepository;
 
-
 @Service
 public class Parser implements IParser
 {
 
-	/**Logger de la clase */
+	/** Logger de la clase */
 	private static Logger log = LogManager.getLogger();
 
-	/** Attribute iPuertoRepository*/
+	/** Attribute iPuertoRepository */
 	@Autowired
 	private IPuertoRepository iPuertoRepository;
 
-	/** Attribute iEquipoRepository*/
+	/** Attribute iEquipoRepository */
 	@Autowired
 	private IEquipoRepository iEquipoRepository;
 
-	/** Attribute recursoRepository*/
+	/** Attribute recursoRepository */
 	@Autowired
 	private IRecursoRepository recursoRepository;
 
@@ -49,10 +48,10 @@ public class Parser implements IParser
 	 * Metodo que recibe el contenido del comando ipconfig y lo parsea a un mapa de
 	 * <String,List<String>>
 	 *
-	 * @param content contenido del comando
-	 * @return mapa con la informacion de cada adaptador
+	 * @param  content          contenido del comando
+	 * @return                  mapa con la informacion de cada adaptador
 	 * @throws NetworkException
-	 * @author Pablo Ruiz Canovas
+	 * @author                  Pablo Ruiz Canovas
 	 */
 
 	@Override
@@ -83,7 +82,7 @@ public class Parser implements IParser
 				datosConf = new LinkedList<>();
 				map.put(keySentencia.trim(), datosConf);
 			}
-			else if (!keySentencia.isEmpty() && (sentencia.contains("IPv4") || this.containsSubred(sentencia)))
+			else if ((!keySentencia.isEmpty() && (sentencia.contains("IPv4") || this.containsSubred(sentencia))))
 			{
 				String[] splitInfo = sentencia.split(":");
 				datosConf.add(splitInfo[1].trim());
@@ -92,7 +91,7 @@ public class Parser implements IParser
 			else if (sentencia.contains("Direcc"))
 			{
 				String[] splitInfo = sentencia.split(":");
-				datosConf.add(splitInfo[1].trim()); 
+				datosConf.add(splitInfo[1].trim());
 				map.put(keySentencia, datosConf);
 			}
 
@@ -103,7 +102,7 @@ public class Parser implements IParser
 		for (Map.Entry<String, List<String>> entry : map.entrySet())
 		{
 			// ADD EXLUSION POR SIZE DE LA LISTA (PARA SACAR MAC)
-			if (!entry.getValue().isEmpty() && entry.getValue().size()>1)
+			if (!entry.getValue().isEmpty() && (entry.getValue().size() > 1))
 			{
 				map2.put(entry.getKey(), entry.getValue());
 			}
@@ -112,14 +111,12 @@ public class Parser implements IParser
 		return map2;
 	}
 
-
-
 	/**
 	 * Parsea el string obtenido del mapeo del Nmap en una lista de Equipos con ip y
 	 * mac
 	 *
-	 * @param String (busqueda del Nmap)
-	 * @return List<Equipos>
+	 * @param  String (busqueda del Nmap)
+	 * @return        List<Equipos>
 	 */
 
 	@Override
@@ -180,8 +177,8 @@ public class Parser implements IParser
 	 * Metodo que comprueba el contenido de la sentencia del comando de ipconfig que
 	 * contenga la palavra 'Máscara de subred' en distintos casos
 	 *
-	 * @param sentencia
-	 * @return false o true depende de si lo ha encontrado o no
+	 * @param  sentencia
+	 * @return           false o true depende de si lo ha encontrado o no
 	 */
 	private boolean containsSubred(String sentencia)
 	{
@@ -192,9 +189,11 @@ public class Parser implements IParser
 		}
 		return found;
 	}
+
 	/**
-	 * metodo que parsea la respuesta de la ejecucion del comando net view
-	 * y la guarda en base de datos los recursos de ese equipo
+	 * metodo que parsea la respuesta de la ejecucion del comando net view y la
+	 * guarda en base de datos los recursos de ese equipo
+	 *
 	 * @param content
 	 * @param Equipo
 	 *
@@ -204,74 +203,80 @@ public class Parser implements IParser
 	{
 		boolean startParse = false;
 		Scanner sc = new Scanner(content);
-		//controlamos que mientras que haya otra linea siga leyendo el content
+		// controlamos que mientras que haya otra linea siga leyendo el content
 		while (sc.hasNextLine())
 		{
 			String linea = sc.nextLine();
-			//control para que empiece a parsear los recursos
+			// control para que empiece a parsear los recursos
 			if (startParse)
 			{
-				//este if es para que guarde los recursos exceptuando la ultima linea la cual es Se ha completado el comando correctamente
+				// este if es para que guarde los recursos exceptuando la ultima linea la cual
+				// es Se ha completado el comando correctamente
 				if (sc.hasNextLine())
 				{
-					//le seteamos los valores al recurso
+					// le seteamos los valores al recurso
 					Recurso recurso = new Recurso();
 					recurso.setNombre(this.parseLine(linea));
 					recurso.setEquipo(equipo);
 					RecursoId recursoId = new RecursoId();
 					recursoId.setIdEquipo(equipo.getId());
 					recurso.setRecursoId(recursoId);
-					//guardamos en base de datos el recurso
+					// guardamos en base de datos el recurso
 					this.recursoRepository.saveAndFlush(recurso);
 				}
 			}
-			//cuando se encuentre con que la linea empieza con - activara el attributo startParse
+			// cuando se encuentre con que la linea empieza con - activara el attributo
+			// startParse
 			else if (linea.startsWith("-"))
 			{
 				startParse = true;
 			}
 		}
-		//cerramos el scanner
+		// cerramos el scanner
 		sc.close();
 	}
 
 	/**
-	 * metodo el cual obtiene las lineas con recursos las recorre todas separadas por espacios y comprueba que
-	 * la siguiente posicion del array no este vacia, en caso de que este vacia no se guarda
-	 * el content contiene una linea con un recurso
-	 * @param content
-	 * @return el nombre de un recurso
+	 * metodo el cual obtiene las lineas con recursos las recorre todas separadas
+	 * por espacios y comprueba que la siguiente posicion del array no este vacia,
+	 * en caso de que este vacia no se guarda el content contiene una linea con un
+	 * recurso
+	 *
+	 * @param  content
+	 * @return         el nombre de un recurso
 	 */
 	private String parseLine(String content)
 	{
 		String[] array;
-		//guardamos en un array los recursos ademas de unas cajas vacias
+		// guardamos en un array los recursos ademas de unas cajas vacias
 		array = content.split(" ");
 		int i = 0;
 		String resource = "";
-		//recorremos el array hasta que se encuentre una caja vacia
+		// recorremos el array hasta que se encuentre una caja vacia
 		while ((i < array.length) && !array[i].equals(""))
 		{
 			String arrayLine = array[i];
 			if (!array[i].isEmpty())
 			{
-				//guardamos el recurso en nuestra variable
+				// guardamos el recurso en nuestra variable
 				resource += arrayLine;
 			}
 			i++;
 		}
-		//devolvemos el recurso
+		// devolvemos el recurso
 		return resource;
 	}
 
 	/**
-	 * @author Manuel Martin Murillo
-	 * HACER UN METODO QUE PARSEE LA RESPUESTA DE LA EJECUCION DE UN COMANDO NMAP ESPECIFICO , EJEMPLO DEL COMANDO -> nmap -Pn -O 192.168.1.132
-     * void parseNmapPNO(Equipo equipo, String content)
-     * NOTA : SE LE PASARA UN EQUIPO , Y EL STRING CONTENT SERA LA INFORMACION DEVUELTA POR EL COMANDO NMAP -PN -O IP
-     * AL EQUIPO SE LE GUARDARA EL S.O , Y LA LISTA DE PUERTOS
-	 * @param equipo
-	 * @param content
+	 * @author         Manuel Martin Murillo HACER UN METODO QUE PARSEE LA RESPUESTA
+	 *                 DE LA EJECUCION DE UN COMANDO NMAP ESPECIFICO , EJEMPLO DEL
+	 *                 COMANDO -> nmap -Pn -O 192.168.1.132 void parseNmapPNO(Equipo
+	 *                 equipo, String content) NOTA : SE LE PASARA UN EQUIPO , Y EL
+	 *                 STRING CONTENT SERA LA INFORMACION DEVUELTA POR EL COMANDO
+	 *                 NMAP -PN -O IP AL EQUIPO SE LE GUARDARA EL S.O , Y LA LISTA
+	 *                 DE PUERTOS
+	 * @param  equipo
+	 * @param  content
 	 */
 	@Override
 	public void parseNmapPNO(Equipo equipo, String content)
@@ -324,44 +329,40 @@ public class Parser implements IParser
 		scanner.close();
 		this.iEquipoRepository.saveAndFlush(equipo);
 	}
-	
+
 	/**
 	 * Method parseWlanNames
+	 *
 	 * @return Map<String,String> map with MAC , and connection name
 	 */
-	public Map<String,String> parseWlanNames(String content)
+	@Override
+	public Map<String, String> parseWlanNames(String content)
 	{
-		Map temporalMap = new HashMap<String,String>();
-		
+		Map<String, String> temporalMap = new HashMap<String, String>();
+
 		// Definir el patrón de búsqueda para el nombre y la dirección física
 		// Definir el patrón de búsqueda para el nombre y la dirección física
 		Pattern pattern = Pattern.compile("\\s+[Direcci�n f�sica Dirección física]\\s+:\\s+([a-zA-Z0-9\\:]+)\\n.+\\n\\s+SSID\\s+:\\s+([a-zA-Z0-9\\+ \\.\\-:]+)");
 
-        // Crear un objeto Matcher con la salida del comando
-        Matcher matcher = pattern.matcher(content);
+		// Crear un objeto Matcher con la salida del comando
+		Matcher matcher = pattern.matcher(content);
 
-        // Buscar e imprimir coincidencias
-        while (matcher.find()) {
-            String nombre = matcher.group(2);
-            String direccionFisica = matcher.group(1);
-            log.info("SSID: " + nombre);
-            log.info("Dirección física: " + direccionFisica);
-            log.info("---------------");
-            
-            // ADD to map
-            temporalMap.put(matcher.group(1), matcher.group(2));
-            
-        }
-        
-        log.info(temporalMap);
-		
+		// Buscar e imprimir coincidencias
+		while (matcher.find())
+		{
+			String nombre = matcher.group(2);
+			String direccionFisica = matcher.group(1);
+			Parser.log.info("SSID: " + nombre);
+			Parser.log.info("Dirección física: " + direccionFisica);
+			Parser.log.info("---------------");
+
+			// ADD to map
+			temporalMap.put(matcher.group(1), matcher.group(2));
+
+		}
+
+		Parser.log.info(temporalMap);
+
 		return temporalMap;
 	}
-	
-	
-	
-	
-	
-	
-	
 }

@@ -16,10 +16,10 @@ public class PuertoId implements Serializable
 {
 	/** Serial Version UID */
 	private static final long serialVersionUID = 6942215107233325773L;
-	
+
 	/** Atributo - Numero de puerto */
 	private Integer numero;
-	
+
 	/** Atributo - Id Equipo */
 	private Long idEquipo;
 }

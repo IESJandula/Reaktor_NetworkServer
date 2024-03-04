@@ -20,62 +20,64 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 
-
 @Entity
 @Table(name = "equipo")
 public class Equipo implements Serializable
 {
+	/** Attribute serialVersionUID*/
+	private static final long serialVersionUID = -4665765615828242153L;
+
 	/** CONSTANTE - IMPRESORA */
 	public final static String TIPO_IMPRESORA = "IMPRESORA";
-	
+
 	/** CONSTANTE - SERVER */
 	public final static String TIPO_SERVER = "SERVER";
-	
+
 	/** CONSTANTE - STANDARD */
 	public final static String TIPO_STANDARD = "STANDARD";
-	
+
 	/**
-     * Attribute - Id del equipo
-     */
+	 * Attribute - Id del equipo
+	 */
 	@Id
 	@GeneratedValue
 	@Column
 	private Long id;
-	
+
 	/**
-     * Attribute - Sistema Operativo del equipo
-     */
+	 * Attribute - Sistema Operativo del equipo
+	 */
 	@Column
 	private String so;
-	
+
 	/**
-     * Attribute - Id de equipo
-     */
+	 * Attribute - Id de equipo
+	 */
 	@Column
 	private String ip;
-	
+
 	/**
-     * Attribute - Mac
-     */
+	 * Attribute - Mac
+	 */
 	@Column
 	private String mac;
-	
+
 	/**
-     * Attribute - Tipo de equipo
-     */
+	 * Attribute - Tipo de equipo
+	 */
 	@Column
 	private String tipo;
-	
-	/** Attribute red*/
+
+	/** Attribute red */
 	@ManyToOne
 	@JsonIgnore
 	private Red red;
-	
-	/** Attribute recursos*/
+
+	/** Attribute recursos */
 	@OneToMany(mappedBy = "equipo")
 	private List<Recurso> recursos;
-	
-	/** Attribute puertos*/
+
+	/** Attribute puertos */
 	@OneToMany(mappedBy = "equipo")
 	private List<Puerto> puertos;
 }

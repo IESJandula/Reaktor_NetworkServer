@@ -20,38 +20,48 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class ScanNetworkTask
 {
-	/** Attribute util*/
+	/** Attribute util */
 	@Autowired
 	private IUtils util;
-	
-	/** Attribute redRepository*/
+
+	/** Attribute redRepository */
 	@Autowired
-    private IRedRepository redRepository;
-	
+	private IRedRepository redRepository;
+
 	/**
 	 * Method scanNetworkTask , scheluded task every 24 hours
-	 * 
+	 *
 	 * @throws NetworkException
 	 */
-	@Scheduled(fixedDelayString = "86400000", initialDelay = 2000) public void scanNetworkTask() throws NetworkException
+	@Scheduled(fixedDelayString = "86400000", initialDelay = 2000)
+	public void scanNetworkTask() throws NetworkException
 	{
 		try
 		{
-			 this.util.saveNetworks();
-			 
-			 List<Red> redes = this.redRepository.findAll();
-			 
-			 for (Red red : redes)
+			this.util.saveNetworks();
+
+			// GETTING ALL
+			List<Red> redes = this.redRepository.findAll();
+			
+			// FOR EACH
+			for (Red red : redes)
 			{
-				 this.util.executeNmapSN(red);
-				 this.util.scanEquipos(red);
+				// EXECUTE NMAP SN
+				this.util.executeNmapSN(red);
+				
+				// SCAN
+				this.util.scanEquipos(red);
 			}
+			
+			// LOG THE END
 			log.info("Fin scan redes");
-			 
-		} catch (NetworkException exception)
+
+		}
+		catch (NetworkException exception)
 		{
-			// Log and throw an exception for interruption errors
-			log.error("Error on scanNetworkTask scheluded", exception);
+			// IF ANY ERROR
+			String error = "Error on scanNetworkTask scheluded";
+			log.error(error, exception);
 			throw exception;
 		}
 	}
