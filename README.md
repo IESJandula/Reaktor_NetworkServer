@@ -49,3 +49,15 @@ http://localhost:8080/api-docs.yaml
 Como se ha comentado en apartados anteriores, se utiliza una bbdd de Mysql llamada network_server.
 ### MER
 ![NetworkDatabase](https://github.com/IESJandula/Reaktor_NetworkServer/assets/120125881/21639192-5e76-4c4b-a2d6-59cc0ed4b890)
+Esta base de datos está compuesta por cuatro tablas, Red, Equipo, Recurso y Puerto.
+
+>La tabla Red, está formada por su Id (Clave primaria), el nombre de la red, y la ruta de esta.
+>Red tiene una relación de 1 a muchos con Equipo.
+
+La tabla Equipo está formada por su Id (Clave primaria), el Sistema Operativo de ese equipo, su dirección Ip, su Mac, el tipo de equipo (Impresora o PC) y la Id de la Red (Clave foránea).
+
+Equipo a su vez tiene una relación 1 a muchos con Recurso y Puerto.
+
+La tabla recurso está formada por el Id del equipo (Clave primaria), un número autogenerado (Clave primaria) y el nombre del recurso.
+
+la tabla Puerto está formada por el Id del equipo (Clave primaria), el número del puerto (Clave primaria) y el nombre del puerto.
