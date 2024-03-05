@@ -344,9 +344,9 @@ public class Utils implements IUtils
 		while ((i < equipo.getPuertos().size()) && (equipo.getTipo() == null))
 		{
 			// Si el número del puerto es el 9100, el 515 o el 631
-			if ((equipo.getPuertos().get(i).getPuertoId().getNumero() == 9100)
-					|| (equipo.getPuertos().get(i).getPuertoId().getNumero() == 515)
-					|| (equipo.getPuertos().get(i).getPuertoId().getNumero() == 631))
+			if ((equipo.getPuertos().get(i).getPuertoId().getNumero() == Constants.PUERTO_9100)
+					|| (equipo.getPuertos().get(i).getPuertoId().getNumero() == Constants.PUERTO_515)
+					|| (equipo.getPuertos().get(i).getPuertoId().getNumero() == Constants.PUERTO_631))
 			{
 				// Será una impresora
 				equipo.setTipo(Equipo.TIPO_IMPRESORA);
