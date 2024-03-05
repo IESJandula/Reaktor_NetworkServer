@@ -24,11 +24,11 @@ public class Constants
 	public static final String NMAP_PN_O = "nmap -Pn -O ";
 	
 	/** PUERTO IMPRESORA 9100 */
-	public static final int PUERTO_9100 = 9100;
+	public static final Integer PUERTO_9100 = 9100;
 	
 	/** PUERTO IMPRESORA 515 */
-	public static final int PUERTO_515 = 515;
+	public static final Integer PUERTO_515 = 515;
 	
 	/** PUERTO IMPRESORA 631 */
-	public static final int PUERTO_631 = 631;
+	public static final Integer PUERTO_631 = 631;
 }
