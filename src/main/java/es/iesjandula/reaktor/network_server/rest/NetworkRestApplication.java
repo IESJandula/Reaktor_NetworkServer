@@ -1,6 +1,8 @@
 package es.iesjandula.reaktor.network_server.rest;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import org.apache.logging.log4j.LogManager;
@@ -90,7 +92,7 @@ public class NetworkRestApplication
 			{
 				if(nombreRed != null)
 				{
-					// --- POR NOMBRE DE RED (wLanConectioinName) ---
+					// --- POR NOMBRE DE RED (wLanConectionName) ---
 					if (this.checkIsBlankEmpty(nombreRed))
 					{
 						String error = "nombreRed is Empty or Blank";
@@ -168,6 +170,12 @@ public class NetworkRestApplication
 		}
 	}
 	
+	/**
+	 * Metodo checkIsBlankEmpty que comprueba si los campos vienen vacíos o en blanco
+	 * 
+	 * @param stringParameter
+	 * @return true si lo son, false si no
+	 */
 	private boolean checkIsBlankEmpty(String stringParameter)
 	{
 		if (stringParameter.isBlank() || stringParameter.isEmpty())
@@ -175,5 +183,50 @@ public class NetworkRestApplication
 			return true;
 		}
 		return false;
+	}
+	
+	/**
+	 * Metodo deleteRedByDays que borra la información de las redes según el número de días
+	 * 
+	 * @param dias
+	 * @return
+	 */
+	@RequestMapping(method = RequestMethod.POST, value = "/delete/red",produces="application/json")
+	public ResponseEntity<?> deleteRedByDays(@RequestHeader(required = false) int numeroDias)
+	{
+		try
+		{
+			List<Red> redesList = this.iRedRepository.findAll();
+			
+			if(numeroDias > 0) 
+			{
+				for (Red red : redesList)
+				{
+					SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd/MM/yyyy");
+					Date fechaRed = simpleDateFormat.parse(red.getFecha().toString());
+					int diaInicial = fechaRed.getDay() - numeroDias;
+					
+					for(int i = diaInicial; i <= fechaRed.getDay(); i++)
+					{
+						this.iRedRepository.deleteAll();
+					}
+				}
+			}
+			else
+			{
+				String error = "El numero de dias debe de ser mayor que 0";
+				log.error(error);
+				return ResponseEntity.status(500).body(new ArrayList<>());
+			}
+			
+			return ResponseEntity.ok().body("Redes borradas con éxito");
+		}
+		catch (Exception exception)
+		{
+			// IF ANY ERROR , RETURNS EMPTY LIST (FOR THE SWAGGER EXAMPLES)
+			String error = "Error getting the info";
+			log.error(error, exception);
+			return ResponseEntity.status(500).body(new ArrayList<>());
+		}
 	}
 }
