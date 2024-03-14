@@ -3,6 +3,7 @@ package es.iesjandula.reaktor.network_server.utils;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
@@ -295,6 +296,9 @@ public class Utils implements IUtils
 					// SET THE VALUE OF THE SSID ASSOCIATED
 					red.setWlanConectionName(wlanNamesMap.get(filtredMac));
 				}
+				
+				// FECHA ACTUAL
+				red.setFecha(LocalDateTime.now());
 
 				// Save the network to the database using the network repository
 				this.redRepository.saveAndFlush(red);

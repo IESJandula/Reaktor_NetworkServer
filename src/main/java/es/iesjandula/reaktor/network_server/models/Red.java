@@ -1,6 +1,7 @@
 package es.iesjandula.reaktor.network_server.models;
 
 import java.io.Serializable;
+import java.time.LocalDateTime;
 import java.util.List;
 
 import jakarta.persistence.Column;
@@ -55,6 +56,12 @@ public class Red implements Serializable
 	 */
 	@Column
 	private String rutaRed;
+	
+	/**
+	 * Attribute - fecha de introducción
+	 */
+	@Column
+	private LocalDateTime fecha;
 
 	/** Attribute equipos */
 	@OneToMany(mappedBy = "red")
