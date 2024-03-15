@@ -3,6 +3,9 @@ package es.iesjandula.reaktor.network_server.models;
 import java.io.Serializable;
 import java.util.List;
 
+import org.hibernate.annotations.Cascade;
+import org.hibernate.annotations.CascadeType;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.Column;
@@ -72,9 +75,11 @@ public class Equipo implements Serializable
 
 	/** Attribute recursos */
 	@OneToMany(mappedBy = "equipo")
+	@Cascade(CascadeType.ALL)
 	private List<Recurso> recursos;
 
 	/** Attribute puertos */
 	@OneToMany(mappedBy = "equipo")
+	@Cascade(CascadeType.ALL)
 	private List<Puerto> puertos;
 }

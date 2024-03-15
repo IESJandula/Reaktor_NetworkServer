@@ -1,6 +1,7 @@
 package es.iesjandula.reaktor.network_server.rest;
 
-import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -70,7 +71,7 @@ public class NetworkRestApplication
 	/**
 	 * Metodo searchRed busca red por el atributo que le pases
 	 * 
-	 * @param nombreRed
+	 * @param wLanConnectionName
 	 * @param ip
 	 * @param so
 	 * @param numeroPuerto
@@ -79,7 +80,7 @@ public class NetworkRestApplication
 	@RequestMapping(method = RequestMethod.GET, value = "/red/by/search",produces="application/json")
 	public ResponseEntity<?> searchRed
 	(
-			@RequestHeader(required = false) String nombreRed,
+			@RequestHeader(required = false) String wLanConnectionName,
 			@RequestHeader(required = false) String ip,
 			@RequestHeader(required = false) String so,
 			@RequestHeader(required = false) Integer numeroPuerto)
@@ -88,14 +89,14 @@ public class NetworkRestApplication
 		{
 			List<Equipo> equiposList = new ArrayList<Equipo>();
 			
-			if((nombreRed != null) || (ip != null) || (so != null) || (numeroPuerto != null))
+			if((wLanConnectionName != null) || (ip != null) || (so != null) || (numeroPuerto != null))
 			{
-				if(nombreRed != null)
+				if(wLanConnectionName != null)
 				{
-					// --- POR NOMBRE DE RED (wLanConectionName) ---
-					if (this.checkIsBlankEmpty(nombreRed))
+					// --- POR NOMBRE DE CONEXIÓN WIRELESS ---
+					if (this.checkIsBlankEmpty(wLanConnectionName))
 					{
-						String error = "nombreRed is Empty or Blank";
+						String error = "wLanConnectionName or nombreRed is Empty or Blank";
 						NetworkException networkException = new NetworkException(404, error, null);
 						return ResponseEntity.status(404).body(networkException.getMessage());
 					}
@@ -104,7 +105,7 @@ public class NetworkRestApplication
 					
 					for (Red red : redList) 
 					{
-						if(red.getWlanConectionName() != null && red.getWlanConectionName().equals(nombreRed))
+						if(red.getWlanConectionName() != null && red.getWlanConectionName().equals(wLanConnectionName))
 						{
 							equiposList.addAll(red.getEquipos());
 						}
@@ -130,7 +131,6 @@ public class NetworkRestApplication
 						NetworkException networkException = new NetworkException(404, error, null);
 						return ResponseEntity.status(404).body(networkException.getMessage());
 					}
-					
 					equiposList.addAll(this.iEquipoRepository.findBySo(so));
 				}
 				else if (numeroPuerto != null)
@@ -192,7 +192,7 @@ public class NetworkRestApplication
 	 * @return
 	 */
 	@RequestMapping(method = RequestMethod.POST, value = "/delete/red",produces="application/json")
-	public ResponseEntity<?> deleteRedByDays(@RequestHeader(required = false) int numeroDias)
+	public ResponseEntity<?> deleteRedByDays(@RequestHeader(required = false) long numeroDias)
 	{
 		try
 		{
@@ -200,15 +200,30 @@ public class NetworkRestApplication
 			
 			if(numeroDias > 0) 
 			{
+				Date fechaHoy = new Date(); 
+				
+				LocalDateTime localDateTimeHoy = fechaHoy.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+				
+				LocalDateTime localDateTimeInicioBorrado = localDateTimeHoy.minusDays(numeroDias);
+				
+				log.info("Fecha desde la que se empieza a borrar " + localDateTimeInicioBorrado);
+				
 				for (Red red : redesList)
 				{
-					SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd/MM/yyyy");
-					Date fechaRed = simpleDateFormat.parse(red.getFecha().toString());
-					int diaInicial = fechaRed.getDay() - numeroDias;
+					Date fechaRed = red.getFecha();
 					
-					for(int i = diaInicial; i <= fechaRed.getDay(); i++)
+					LocalDateTime localDateTimeFechaRed = fechaRed.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+					
+					if (localDateTimeFechaRed.isBefore(localDateTimeInicioBorrado))
 					{
-						this.iRedRepository.deleteAll();
+						this.iRedRepository.delete(red);
+						log.info("Red borrada: " + red.getId() + " --> " + red.getWlanConectionName());
+					}
+					else
+					{
+						String error = "No hay ninguna fecha de red que esté antes de " + localDateTimeFechaRed;;
+						log.error(error);
+						return ResponseEntity.status(500).body(error);
 					}
 				}
 			}
@@ -216,7 +231,7 @@ public class NetworkRestApplication
 			{
 				String error = "El numero de dias debe de ser mayor que 0";
 				log.error(error);
-				return ResponseEntity.status(500).body(new ArrayList<>());
+				return ResponseEntity.status(500).body(error);
 			}
 			
 			return ResponseEntity.ok().body("Redes borradas con éxito");

@@ -1,8 +1,11 @@
 package es.iesjandula.reaktor.network_server.models;
 
 import java.io.Serializable;
-import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.List;
+
+import org.hibernate.annotations.Cascade;
+import org.hibernate.annotations.CascadeType;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -16,7 +19,7 @@ import lombok.NoArgsConstructor;
 
 @Data
 @NoArgsConstructor
-@AllArgsConstructor
+@AllArgsConstructor 
 
 @Entity
 @Table(name = "red")
@@ -61,9 +64,10 @@ public class Red implements Serializable
 	 * Attribute - fecha de introducción
 	 */
 	@Column
-	private LocalDateTime fecha;
+	private Date fecha;
 
 	/** Attribute equipos */
 	@OneToMany(mappedBy = "red")
+	@Cascade(CascadeType.ALL)
 	private List<Equipo> equipos;
 }

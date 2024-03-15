@@ -3,7 +3,7 @@ package es.iesjandula.reaktor.network_server.utils;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
@@ -298,7 +298,7 @@ public class Utils implements IUtils
 				}
 				
 				// FECHA ACTUAL
-				red.setFecha(LocalDateTime.now());
+				red.setFecha(new Date());
 
 				// Save the network to the database using the network repository
 				this.redRepository.saveAndFlush(red);
