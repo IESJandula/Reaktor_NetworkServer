@@ -186,55 +186,39 @@ public class NetworkRestApplication
 	}
 	
 	/**
-	 * Metodo deleteRedByDays que borra la información de las redes según el número de días
+	 * Metodo deleteRedBeforeDate que borra la información de todas las redes anteriores a un día
 	 * 
-	 * @param dias
+	 * @param numeroDias
 	 * @return
 	 */
-	@RequestMapping(method = RequestMethod.POST, value = "/delete/red",produces="application/json")
-	public ResponseEntity<?> deleteRedByDays(@RequestHeader(required = false) long numeroDias)
+	@RequestMapping(method = RequestMethod.POST, value = "/red/deleteAllBefore",produces="application/json")
+	public ResponseEntity<?> deleteRedBeforeDate(@RequestHeader(required = false) long numeroDias)
 	{
 		try
 		{
-			List<Red> redesList = this.iRedRepository.findAll();
-			
-			if(numeroDias > 0) 
+			if (numeroDias > 0) 
 			{
-				Date fechaHoy = new Date(); 
-				
-				LocalDateTime localDateTimeHoy = fechaHoy.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
-				
-				LocalDateTime localDateTimeInicioBorrado = localDateTimeHoy.minusDays(numeroDias);
-				
-				log.info("Fecha desde la que se empieza a borrar " + localDateTimeInicioBorrado);
-				
-				for (Red red : redesList)
-				{
-					Date fechaRed = red.getFecha();
-					
-					LocalDateTime localDateTimeFechaRed = fechaRed.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
-					
-					if (localDateTimeFechaRed.isBefore(localDateTimeInicioBorrado))
-					{
-						this.iRedRepository.delete(red);
-						log.info("Red borrada: " + red.getId() + " --> " + red.getWlanConectionName());
-					}
-					else
-					{
-						String error = "No hay ninguna fecha de red que esté antes de " + localDateTimeFechaRed;;
-						log.error(error);
-						return ResponseEntity.status(500).body(error);
-					}
-				}
-			}
-			else
-			{
-				String error = "El numero de dias debe de ser mayor que 0";
-				log.error(error);
-				return ResponseEntity.status(500).body(error);
-			}
+	            Date fechaHoy = new Date();
+	            LocalDateTime localDateTimeHoy = fechaHoy.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+	            LocalDateTime localDateTimeBorrarAntesDe = localDateTimeHoy.minusDays(numeroDias);
+	            log.info("Se borrará toda la información de redes registradas antes de la fecha: " + localDateTimeBorrarAntesDe);
+	            
+	            List<Red> redesList = this.iRedRepository.findByFechaBefore(localDateTimeBorrarAntesDe);
+
+	            for (Red red : redesList) 
+	            {
+	                this.iRedRepository.delete(red);
+	                log.info("Red borrada: " + red.getId() + " --> " + red.getWlanConectionName());
+	            }
+	        } 
+			else 
+	        {
+	            String error = "El numero de días debe ser mayor que 0";
+	            log.error(error);
+	            return ResponseEntity.status(500).body(error);
+	        }
 			
-			return ResponseEntity.ok().body("Redes borradas con éxito");
+			return ResponseEntity.ok().body("Todo correcto");
 		}
 		catch (Exception exception)
 		{
@@ -244,4 +228,65 @@ public class NetworkRestApplication
 			return ResponseEntity.status(500).body(new ArrayList<>());
 		}
 	}
+	
+//	/**
+//	 * Metodo deleteRedByDays que borra la información de las redes según el número de días
+//	 * 
+//	 * @param dias
+//	 * @return
+//	 */
+//	@RequestMapping(method = RequestMethod.POST, value = "/red/delete",produces="application/json")
+//	public ResponseEntity<?> deleteRedByDays(@RequestHeader(required = false) long numeroDias)
+//	{
+//		try
+//		{
+//			List<Red> redesList = this.iRedRepository.findAll();
+//			
+//			if(numeroDias > 0) 
+//			{
+//				Date fechaHoy = new Date(); 
+//				
+//				LocalDateTime localDateTimeHoy = fechaHoy.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+//				
+//				LocalDateTime localDateTimeInicioBorrado = localDateTimeHoy.minusDays(numeroDias);
+//				
+//				log.info("Fecha desde la que se empieza a borrar " + localDateTimeInicioBorrado);
+//				
+//				for (Red red : redesList)
+//				{
+//					Date fechaRed = red.getFecha();
+//					
+//					LocalDateTime localDateTimeFechaRed = fechaRed.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+//					
+//					if (localDateTimeFechaRed.isBefore(localDateTimeInicioBorrado))
+//					{
+//						this.iRedRepository.delete(red);
+//						log.info("Red borrada: " + red.getId() + " --> " + red.getWlanConectionName());
+//					}
+//					else
+//					{
+//						String error = "No hay ninguna fecha de red que esté antes de " + localDateTimeFechaRed;;
+//						log.error(error);
+//						return ResponseEntity.status(500).body(error);
+//					}
+//				}
+//			}
+//			else
+//			{
+//				String error = "El numero de dias debe de ser mayor que 0";
+//				log.error(error);
+//				return ResponseEntity.status(500).body(error);
+//			}
+//			
+//			return ResponseEntity.ok().body("Redes borradas con éxito");
+//		}
+//		catch (Exception exception)
+//		{
+//			// IF ANY ERROR , RETURNS EMPTY LIST (FOR THE SWAGGER EXAMPLES)
+//			String error = "Error getting the info";
+//			log.error(error, exception);
+//			return ResponseEntity.status(500).body(new ArrayList<>());
+//		}
+//	}
+	
 }
