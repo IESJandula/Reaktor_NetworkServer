@@ -201,14 +201,14 @@ public class NetworkRestApplication
 	            Date fechaHoy = new Date();
 	            LocalDateTime localDateTimeHoy = fechaHoy.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
 	            LocalDateTime localDateTimeBorrarAntesDe = localDateTimeHoy.minusDays(numeroDias);
-	            log.info("Se borrará toda la información de redes registradas antes de la fecha: " + localDateTimeBorrarAntesDe);
+	            log.info("Se pretende borrar toda la información de redes registradas antes de la fecha: " + localDateTimeBorrarAntesDe);
 	            
 	            List<Red> redesList = this.iRedRepository.findByFechaBefore(localDateTimeBorrarAntesDe);
 
 	            for (Red red : redesList) 
 	            {
-	                this.iRedRepository.delete(red);
-	                log.info("Red borrada: " + red.getId() + " --> " + red.getWlanConectionName());
+	            	this.iRedRepository.delete(red);
+	            	log.info("Red borrada: " + red.getId() + " --> " + red.getWlanConectionName());
 	            }
 	        } 
 			else 
@@ -218,7 +218,7 @@ public class NetworkRestApplication
 	            return ResponseEntity.status(500).body(error);
 	        }
 			
-			return ResponseEntity.ok().body("Todo correcto");
+			return ResponseEntity.ok().body("OK");
 		}
 		catch (Exception exception)
 		{
