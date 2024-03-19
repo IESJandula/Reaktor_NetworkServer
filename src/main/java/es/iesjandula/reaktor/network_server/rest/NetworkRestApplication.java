@@ -229,6 +229,58 @@ public class NetworkRestApplication
 		}
 	}
 	
+	@RequestMapping(method = RequestMethod.GET, value = "/get/redes/name",produces="application/json")
+	public ResponseEntity<List<String>> getRedesName()
+	{
+		try
+		{
+			// GET ALL RED LIST
+			List<Red> allDataList = this.iRedRepository.findAll();
+			List<String> redesNameList = new ArrayList<String>();
+			for (Red red : allDataList)
+			{
+				if(!redesNameList.contains(red.getWlanConectionName()))
+				{
+					redesNameList.add(red.getWlanConectionName());
+				}
+			}
+			return ResponseEntity.ok().body(redesNameList);
+		}
+		catch (Exception exception)
+		{
+			// IF ANY ERROR , RETURNS EMPTY LIST (FOR THE SWAGGER EXAMPLES)
+			String error = "Error getting the info";
+			log.error(error, exception);
+			return ResponseEntity.status(500).body(new ArrayList<>());
+		}
+	}
+	
+	@RequestMapping(method = RequestMethod.GET, value = "/get/equipos/redes",produces="application/json")
+	public ResponseEntity<List<String>> getEquiposEnRedes()
+	{
+		try
+		{
+			// GET ALL RED LIST
+			List<Equipo> allEquiposList = this.iEquipoRepository.findAll();
+			List<String> equiposInfoList = new ArrayList<String>();
+			for (Equipo equipo: allEquiposList)
+			{
+				if(equipo.getSo() != null && equipo.getTipo() != null && !equiposInfoList.contains(equipo.getMac() + ";" + equipo.getIp() + ";" + equipo.getTipo()))
+				{
+					equiposInfoList.add(equipo.getMac() + ";" + equipo.getIp() + ";" + equipo.getTipo());
+				}
+			}
+			return ResponseEntity.ok().body(equiposInfoList);
+		}
+		catch (Exception exception)
+		{
+			// IF ANY ERROR , RETURNS EMPTY LIST (FOR THE SWAGGER EXAMPLES)
+			String error = "Error getting the info";
+			log.error(error, exception);
+			return ResponseEntity.status(500).body(new ArrayList<>());
+		}
+	}
+	
 //	/**
 //	 * Metodo deleteRedByDays que borra la información de las redes según el número de días
 //	 * 
