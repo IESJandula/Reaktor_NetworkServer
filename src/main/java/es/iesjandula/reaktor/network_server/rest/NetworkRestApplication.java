@@ -1,10 +1,13 @@
 package es.iesjandula.reaktor.network_server.rest;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -13,6 +16,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import es.iesjandula.reaktor.network_server.exception.NetworkException;
@@ -56,7 +60,33 @@ public class NetworkRestApplication
 		{
 			// GET ALL RED LIST
 			List<Red> allDataList = this.iRedRepository.findAll();
-			return ResponseEntity.ok().body(allDataList);
+            List<Red> redesHoy = new ArrayList<>();
+            Set<String> ipsAgregadas = new HashSet<>();
+
+            Date fechaHoy = new Date();
+            LocalDateTime localDateTimeHoy = fechaHoy.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+
+            for (Red red : allDataList) {
+                Date fechaRed = red.getFecha();
+                LocalDateTime localDateTimeFechaRed = fechaRed.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+
+                if (localDateTimeHoy.getDayOfMonth() == localDateTimeFechaRed.getDayOfMonth()) 
+                {
+                    List<Equipo> equiposUnicos = new ArrayList<>();
+                    for (Equipo equipo : red.getEquipos())
+                    {
+                        if (!ipsAgregadas.contains(equipo.getIp())) 
+                        {
+                            equiposUnicos.add(equipo);
+                            ipsAgregadas.add(equipo.getIp());
+                        }
+                    }
+                    red.setEquipos(equiposUnicos);
+                    redesHoy.add(red);
+                }
+            }
+
+            return ResponseEntity.ok().body(redesHoy);
 		}
 		catch (Exception exception)
 		{
@@ -192,23 +222,33 @@ public class NetworkRestApplication
 	 * @return
 	 */
 	@RequestMapping(method = RequestMethod.POST, value = "/red/deleteAllBefore",produces="application/json")
-	public ResponseEntity<?> deleteRedBeforeDate(@RequestHeader(required = false) long numeroDias)
+	public ResponseEntity<?> deleteRedBeforeDate(@RequestParam(required = false) String numeroDiasString)
 	{
 		try
 		{
-			if (numeroDias > 0) 
+			if (numeroDiasString != null && !numeroDiasString.isEmpty()) 
 			{
-	            Date fechaHoy = new Date();
-	            LocalDateTime localDateTimeHoy = fechaHoy.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
-	            LocalDateTime localDateTimeBorrarAntesDe = localDateTimeHoy.minusDays(numeroDias);
-	            log.info("Se pretende borrar toda la información de redes registradas antes de la fecha: " + localDateTimeBorrarAntesDe);
-	            
-	            List<Red> redesList = this.iRedRepository.findByFechaBefore(localDateTimeBorrarAntesDe);
-
-	            for (Red red : redesList) 
+	            // Convertir la cadena a un entero
+	            Integer numeroDias = Integer.parseInt(numeroDiasString);
+	            if (numeroDias >= 0) 
 	            {
-	            	this.iRedRepository.delete(red);
-	            	log.info("Red borrada: " + red.getId() + " --> " + red.getWlanConectionName());
+	                LocalDate hoy = LocalDate.now();
+	                LocalDateTime localDateTimeHoy = hoy.atStartOfDay();
+	                LocalDateTime localDateTimeBorrarAntesDe = localDateTimeHoy.minusDays(numeroDias);
+	                log.info("Se pretende borrar toda la información de redes registradas antes de la fecha: " + localDateTimeBorrarAntesDe);
+
+	                List<Red> redesList = this.iRedRepository.findByFechaBefore(localDateTimeBorrarAntesDe);
+
+	                for (Red red : redesList) 
+	                {
+	                    this.iRedRepository.delete(red);
+	                    log.info("Red borrada: " + red.getId() + " --> " + red.getWlanConectionName());
+	                }
+	            } 
+	            else 
+	            {
+	                String error = "El número de días debe ser mayor o igual que 0";
+	                log.error(error);
 	            }
 	        } 
 			else 
@@ -228,117 +268,5 @@ public class NetworkRestApplication
 			return ResponseEntity.status(500).body(new ArrayList<>());
 		}
 	}
-	
-	@RequestMapping(method = RequestMethod.GET, value = "/get/redes/name",produces="application/json")
-	public ResponseEntity<List<String>> getRedesName()
-	{
-		try
-		{
-			// GET ALL RED LIST
-			List<Red> allDataList = this.iRedRepository.findAll();
-			List<String> redesNameList = new ArrayList<String>();
-			for (Red red : allDataList)
-			{
-				if(!redesNameList.contains(red.getWlanConectionName()))
-				{
-					redesNameList.add(red.getWlanConectionName());
-				}
-			}
-			return ResponseEntity.ok().body(redesNameList);
-		}
-		catch (Exception exception)
-		{
-			// IF ANY ERROR , RETURNS EMPTY LIST (FOR THE SWAGGER EXAMPLES)
-			String error = "Error getting the info";
-			log.error(error, exception);
-			return ResponseEntity.status(500).body(new ArrayList<>());
-		}
-	}
-	
-	@RequestMapping(method = RequestMethod.GET, value = "/get/equipos/redes",produces="application/json")
-	public ResponseEntity<List<String>> getEquiposEnRedes()
-	{
-		try
-		{
-			// GET ALL RED LIST
-			List<Equipo> allEquiposList = this.iEquipoRepository.findAll();
-			List<String> equiposInfoList = new ArrayList<String>();
-			for (Equipo equipo: allEquiposList)
-			{
-				if(equipo.getSo() != null && equipo.getTipo() != null && !equiposInfoList.contains(equipo.getMac() + ";" + equipo.getIp() + ";" + equipo.getTipo()))
-				{
-					equiposInfoList.add(equipo.getMac() + ";" + equipo.getIp() + ";" + equipo.getTipo());
-				}
-			}
-			return ResponseEntity.ok().body(equiposInfoList);
-		}
-		catch (Exception exception)
-		{
-			// IF ANY ERROR , RETURNS EMPTY LIST (FOR THE SWAGGER EXAMPLES)
-			String error = "Error getting the info";
-			log.error(error, exception);
-			return ResponseEntity.status(500).body(new ArrayList<>());
-		}
-	}
-	
-//	/**
-//	 * Metodo deleteRedByDays que borra la información de las redes según el número de días
-//	 * 
-//	 * @param dias
-//	 * @return
-//	 */
-//	@RequestMapping(method = RequestMethod.POST, value = "/red/delete",produces="application/json")
-//	public ResponseEntity<?> deleteRedByDays(@RequestHeader(required = false) long numeroDias)
-//	{
-//		try
-//		{
-//			List<Red> redesList = this.iRedRepository.findAll();
-//			
-//			if(numeroDias > 0) 
-//			{
-//				Date fechaHoy = new Date(); 
-//				
-//				LocalDateTime localDateTimeHoy = fechaHoy.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
-//				
-//				LocalDateTime localDateTimeInicioBorrado = localDateTimeHoy.minusDays(numeroDias);
-//				
-//				log.info("Fecha desde la que se empieza a borrar " + localDateTimeInicioBorrado);
-//				
-//				for (Red red : redesList)
-//				{
-//					Date fechaRed = red.getFecha();
-//					
-//					LocalDateTime localDateTimeFechaRed = fechaRed.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
-//					
-//					if (localDateTimeFechaRed.isBefore(localDateTimeInicioBorrado))
-//					{
-//						this.iRedRepository.delete(red);
-//						log.info("Red borrada: " + red.getId() + " --> " + red.getWlanConectionName());
-//					}
-//					else
-//					{
-//						String error = "No hay ninguna fecha de red que esté antes de " + localDateTimeFechaRed;;
-//						log.error(error);
-//						return ResponseEntity.status(500).body(error);
-//					}
-//				}
-//			}
-//			else
-//			{
-//				String error = "El numero de dias debe de ser mayor que 0";
-//				log.error(error);
-//				return ResponseEntity.status(500).body(error);
-//			}
-//			
-//			return ResponseEntity.ok().body("Redes borradas con éxito");
-//		}
-//		catch (Exception exception)
-//		{
-//			// IF ANY ERROR , RETURNS EMPTY LIST (FOR THE SWAGGER EXAMPLES)
-//			String error = "Error getting the info";
-//			log.error(error, exception);
-//			return ResponseEntity.status(500).body(new ArrayList<>());
-//		}
-//	}
 	
 }

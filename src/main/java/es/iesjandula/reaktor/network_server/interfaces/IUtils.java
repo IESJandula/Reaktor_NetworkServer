@@ -56,14 +56,14 @@ public interface IUtils
 	 * @param  map
 	 * @throws NetworkException
 	 */
-	public void insertRedes(Map<String, List<String>> map) throws NetworkException;
+	public List<Red> insertRedes(Map<String, List<String>> map) throws NetworkException;
 
 	/**
 	 * Method saveNetworks
 	 * 
 	 * @throws NetworkException
 	 */
-	public void saveNetworks() throws NetworkException;
+	public List<Red> saveNetworks() throws NetworkException;
 
 	/**
 	 * Method scanEquipos

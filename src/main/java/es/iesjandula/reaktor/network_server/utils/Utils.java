@@ -3,6 +3,7 @@ package es.iesjandula.reaktor.network_server.utils;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -256,9 +257,10 @@ public class Utils implements IUtils
 	 * @throws NetworkException
 	 */
 	@Override
-	public void insertRedes(Map<String, List<String>> map) throws NetworkException
+	public List<Red> insertRedes(Map<String, List<String>> map) throws NetworkException
 	{
-
+		List<Red> redesList = new ArrayList<Red>();
+		
 		// Iteration on the map
 		for (Map.Entry<String, List<String>> entry : map.entrySet())
 		{
@@ -299,6 +301,8 @@ public class Utils implements IUtils
 				
 				// FECHA ACTUAL
 				red.setFecha(new Date());
+				
+				redesList.add(red);
 
 				// Save the network to the database using the network repository
 				this.redRepository.saveAndFlush(red);
@@ -311,6 +315,7 @@ public class Utils implements IUtils
 				throw networkException;
 			}
 		}
+		return redesList;
 	}
 
 	/**
@@ -319,13 +324,14 @@ public class Utils implements IUtils
 	 * @throws NetworkException
 	 */
 	@Override
-	public void saveNetworks() throws NetworkException
+	public List<Red> saveNetworks() throws NetworkException
 	{
+		List<Red> redesList= new ArrayList<Red>();
 		try
 		{
 			// Try to call executeComand to get the ipconfig string, and parse it with
 			// parseIpConfig, on the last, try to insert with insertRedes
-			this.insertRedes(this.iparse.parseIpConfig(this.executeCommandNonWait(Constants.IPCONFIG_ALL)));
+			redesList = this.insertRedes(this.iparse.parseIpConfig(this.executeCommandNonWait(Constants.IPCONFIG_ALL)));
 
 		}
 		catch (NetworkException exception)
@@ -334,6 +340,7 @@ public class Utils implements IUtils
 			log.error("Error on save network", exception);
 			throw exception;
 		}
+		return redesList;
 	}
 
 	/**

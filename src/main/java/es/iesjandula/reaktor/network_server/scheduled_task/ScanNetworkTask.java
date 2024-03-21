@@ -38,10 +38,7 @@ public class ScanNetworkTask
 	{
 		try
 		{
-			this.util.saveNetworks();
-
-			// GETTING ALL
-			List<Red> redes = this.redRepository.findAll();
+			List<Red> redes = this.util.saveNetworks();
 			
 			// FOR EACH
 			for (Red red : redes)
