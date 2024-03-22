@@ -24,4 +24,6 @@ public interface IEquipoRepository extends JpaRepository<Equipo, Long>
 	public List<Equipo> findByIp(String ip);
 	
 	public List<Equipo> findBySo(String so);
+	
+	public List<Equipo> findByTipo(String tipo);
 }

@@ -12,6 +12,7 @@ import java.util.Set;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -58,33 +59,35 @@ public class NetworkRestApplication
 	{
 		try
 		{
-			// GET ALL RED LIST
-			List<Red> allDataList = this.iRedRepository.findAll();
-            List<Red> redesHoy = new ArrayList<>();
-            Set<String> ipsAgregadas = new HashSet<>();
+			// GET ALL RED LIST sorted by date in descending order
+	        List<Red> allDataList = this.iRedRepository.findAll(Sort.by(Sort.Direction.DESC, "fecha"));
 
-            Date fechaHoy = new Date();
-            LocalDateTime localDateTimeHoy = fechaHoy.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+	        List<Red> redesHoy = new ArrayList<>();
+	        Set<String> ipsAgregadas = new HashSet<>();
 
-            for (Red red : allDataList) {
-                Date fechaRed = red.getFecha();
-                LocalDateTime localDateTimeFechaRed = fechaRed.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+	        Date fechaHoy = new Date();
+	        LocalDateTime localDateTimeHoy = fechaHoy.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
 
-                if (localDateTimeHoy.getDayOfMonth() == localDateTimeFechaRed.getDayOfMonth()) 
-                {
-                    List<Equipo> equiposUnicos = new ArrayList<>();
-                    for (Equipo equipo : red.getEquipos())
-                    {
-                        if (!ipsAgregadas.contains(equipo.getIp())) 
-                        {
-                            equiposUnicos.add(equipo);
-                            ipsAgregadas.add(equipo.getIp());
-                        }
-                    }
-                    red.setEquipos(equiposUnicos);
-                    redesHoy.add(red);
-                }
-            }
+	        for (Red red : allDataList)
+	        {
+	            Date fechaRed = red.getFecha();
+	            LocalDateTime localDateTimeFechaRed = fechaRed.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+
+	            if (localDateTimeHoy.getDayOfMonth() == localDateTimeFechaRed.getDayOfMonth()) 
+	            {
+	            	List<Equipo> equiposUnicos = new ArrayList<>();
+	                for (Equipo equipo : red.getEquipos())
+	                {
+	                    if (!ipsAgregadas.contains(equipo.getIp())) 
+	                    {
+	                        equiposUnicos.add(equipo);
+	                        ipsAgregadas.add(equipo.getIp());
+	                    }
+	                }
+	                red.setEquipos(equiposUnicos);
+	                redesHoy.add(red);
+	            }
+	        }
 
             return ResponseEntity.ok().body(redesHoy);
 		}
@@ -113,13 +116,13 @@ public class NetworkRestApplication
 			@RequestHeader(required = false) String wLanConnectionName,
 			@RequestHeader(required = false) String ip,
 			@RequestHeader(required = false) String so,
-			@RequestHeader(required = false) Integer numeroPuerto)
+			@RequestHeader(required = false) String tipo)
 	{
 		try
 		{
 			List<Equipo> equiposList = new ArrayList<Equipo>();
 			
-			if((wLanConnectionName != null) || (ip != null) || (so != null) || (numeroPuerto != null))
+			if((wLanConnectionName != null) || (ip != null) || (so != null) || (tipo != null))
 			{
 				if(wLanConnectionName != null)
 				{
@@ -163,24 +166,16 @@ public class NetworkRestApplication
 					}
 					equiposList.addAll(this.iEquipoRepository.findBySo(so));
 				}
-				else if (numeroPuerto != null)
+				else if (tipo != null)
 				{
 					// --- POR PUERTO ---
-					if(this.checkIsBlankEmpty(numeroPuerto.toString()))
+					if(this.checkIsBlankEmpty(tipo))
 					{
 						String error = "numeroPuerto is Empty or Blank";
 						NetworkException networkException = new NetworkException(404, error, null);
 						return ResponseEntity.status(404).body(networkException.getMessage());
 					}
-					List<Puerto> puertosList = this.iPuertoRepository.findAll();
-					
-					for (Puerto puerto : puertosList) 
-					{
-						if(puerto.getPuertoId().getNumero().equals(numeroPuerto))
-						{
-							equiposList.add(puerto.getEquipo());
-						}
-					}
+					equiposList.addAll(this.iEquipoRepository.findByTipo(tipo));
 				}
 			}
 			else
@@ -247,8 +242,9 @@ public class NetworkRestApplication
 	            } 
 	            else 
 	            {
-	                String error = "El número de días debe ser mayor o igual que 0";
-	                log.error(error);
+	            	log.info("Se van a borrar todas las redes");
+	            	this.iRedRepository.deleteAll();
+	            	log.info("Redes borradas");
 	            }
 	        } 
 			else 
