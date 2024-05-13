@@ -225,15 +225,18 @@ public class NetworkRestApplication
 			{
 	            // Convertir la cadena a un entero
 	            Integer numeroDias = Integer.parseInt(numeroDiasString);
+	            LocalDate hoy = LocalDate.now();
+                LocalDateTime localDateTimeHoy = hoy.atStartOfDay();
+                
+                LocalDateTime localDateTimeBorrarAntesDe = localDateTimeHoy.minusDays(numeroDias);
+                log.info("Se pretende borrar toda la información de redes registradas antes de la fecha: " + localDateTimeBorrarAntesDe);
+
+                List<Red> redesList = this.iRedRepository.findByFechaBefore(localDateTimeBorrarAntesDe);
+
+                
 	            if (numeroDias >= 0) 
 	            {
-	                LocalDate hoy = LocalDate.now();
-	                LocalDateTime localDateTimeHoy = hoy.atStartOfDay();
-	                LocalDateTime localDateTimeBorrarAntesDe = localDateTimeHoy.minusDays(numeroDias);
-	                log.info("Se pretende borrar toda la información de redes registradas antes de la fecha: " + localDateTimeBorrarAntesDe);
-
-	                List<Red> redesList = this.iRedRepository.findByFechaBefore(localDateTimeBorrarAntesDe);
-
+	                
 	                for (Red red : redesList) 
 	                {
 	                    this.iRedRepository.delete(red);
@@ -242,14 +245,29 @@ public class NetworkRestApplication
 	            } 
 	            else 
 	            {
-	            	log.info("Se van a borrar todas las redes");
-	            	this.iRedRepository.deleteAll();
-	            	log.info("Redes borradas");
+	            	Red ultimaFechaIntroducida = null;
+	                for (Red red : redesList) 
+	                {
+	                    if (ultimaFechaIntroducida == null || red.getFecha().after(ultimaFechaIntroducida.getFecha())) 
+	                    {
+	                        ultimaFechaIntroducida = red;
+	                    }
+	                }
+	            	
+	            	log.info("Se van a borrar todas las redes anteriores a la ultima escaneada o en proceso de escaneo");
+	            	for (Red red : redesList) 
+	            	{
+	                    if (!red.equals(ultimaFechaIntroducida)) 
+	                    {
+	                        this.iRedRepository.delete(red);
+	                        log.info("Red borrada: " + red.getId() + " --> " + red.getWlanConectionName());
+	                    }
+	                }
 	            }
 	        } 
 			else 
 	        {
-	            String error = "El numero de días debe ser mayor que 0";
+	            String error = "El numero de días no puede ser nulo o vacio";
 	            log.error(error);
 	            return ResponseEntity.status(500).body(error);
 	        }
