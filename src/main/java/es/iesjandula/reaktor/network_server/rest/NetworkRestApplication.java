@@ -8,6 +8,7 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -36,11 +37,11 @@ public class NetworkRestApplication
 	/** Attribute iRedRepository */
 	@Autowired
 	private IRedRepository iRedRepository;
-	
+
 	/** Attribute iEquipoRepository */
 	@Autowired
 	private IEquipoRepository iEquipoRepository;
-	
+
 	/** Attribute iPuertoRepository */
 	@Autowired
 	private IPuertoRepository iPuertoRepository;
@@ -54,44 +55,43 @@ public class NetworkRestApplication
 	 * @return List<Red>
 	 */
 	@Operation
-	@RequestMapping(method = RequestMethod.GET, value = "/get/all/data",produces="application/json")
+	@RequestMapping(method = RequestMethod.GET, value = "/get/all/data", produces = "application/json")
 	public ResponseEntity<List<Red>> getScanData()
 	{
 		try
 		{
 			// GET ALL RED LIST sorted by date in descending order
-	        List<Red> allDataList = this.iRedRepository.findAll(Sort.by(Sort.Direction.DESC, "fecha"));
+			List<Red> allDataList = this.iRedRepository.findAll(Sort.by(Sort.Direction.DESC, "fecha"));
 
-	        List<Red> redesHoy = new ArrayList<>();
-	        Set<String> ipsAgregadas = new HashSet<>();
+			List<Red> redesHoy = new ArrayList<>();
+			Set<String> ipsAgregadas = new HashSet<>();
 
-	        Date fechaHoy = new Date();
-	        LocalDateTime localDateTimeHoy = fechaHoy.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+			Date fechaHoy = new Date();
+			LocalDateTime localDateTimeHoy = fechaHoy.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
 
-	        for (Red red : allDataList)
-	        {
-	            Date fechaRed = red.getFecha();
-	            LocalDateTime localDateTimeFechaRed = fechaRed.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+			for (Red red : allDataList)
+			{
+				Date fechaRed = red.getFecha();
+				LocalDateTime localDateTimeFechaRed = fechaRed.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
 
-	            if (localDateTimeHoy.getDayOfMonth() == localDateTimeFechaRed.getDayOfMonth()) 
-	            {
-	            	List<Equipo> equiposUnicos = new ArrayList<>();
-	                for (Equipo equipo : red.getEquipos())
-	                {
-	                    if (!ipsAgregadas.contains(equipo.getIp())) 
-	                    {
-	                        equiposUnicos.add(equipo);
-	                        ipsAgregadas.add(equipo.getIp());
-	                    }
-	                }
-	                red.setEquipos(equiposUnicos);
-	                redesHoy.add(red);
-	            }
-	        }
+				if (localDateTimeHoy.getDayOfMonth() == localDateTimeFechaRed.getDayOfMonth())
+				{
+					List<Equipo> equiposUnicos = new ArrayList<>();
+					for (Equipo equipo : red.getEquipos())
+					{
+						if (!ipsAgregadas.contains(equipo.getIp()))
+						{
+							equiposUnicos.add(equipo);
+							ipsAgregadas.add(equipo.getIp());
+						}
+					}
+					red.setEquipos(equiposUnicos);
+					redesHoy.add(red);
+				}
+			}
 
-            return ResponseEntity.ok().body(redesHoy);
-		}
-		catch (Exception exception)
+			return ResponseEntity.ok().body(redesHoy);
+		} catch (Exception exception)
 		{
 			// IF ANY ERROR , RETURNS EMPTY LIST (FOR THE SWAGGER EXAMPLES)
 			String error = "Error getting the info";
@@ -100,7 +100,7 @@ public class NetworkRestApplication
 		}
 
 	}
-	
+
 	/**
 	 * Metodo searchRed busca red por el atributo que le pases
 	 * 
@@ -110,171 +110,159 @@ public class NetworkRestApplication
 	 * @param numeroPuerto
 	 * @return
 	 */
-	@RequestMapping(method = RequestMethod.GET, value = "/red/by/search",produces="application/json")
-	public ResponseEntity<?> searchRed
-	(
-			@RequestHeader(required = false) String wLanConnectionName,
-			@RequestHeader(required = false) String ip,
-			@RequestHeader(required = false) String so,
-			@RequestHeader(required = false) String tipo)
+	@RequestMapping(method = RequestMethod.GET, value = "/red/by/search", produces = "application/json")
+	public ResponseEntity<List<Red>> searchRed(@RequestParam(required = false) String ip)
 	{
 		try
 		{
-			List<Equipo> equiposList = new ArrayList<Equipo>();
+			// GET ALL RED LIST sorted by date in descending order
+			List<Red> allDataList = this.iRedRepository.findAll(Sort.by(Sort.Direction.DESC, "fecha"));
+
+			List<Red> filteredRedes = new ArrayList<>();
+			Set<String> ipsAgregadas = new HashSet<>();
 			
-			if((wLanConnectionName != null) || (ip != null) || (so != null) || (tipo != null))
+			Date fechaHoy = new Date();
+			LocalDateTime localDateTimeHoy = fechaHoy.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+			
+			if(ip.equals(""))
 			{
-				if(wLanConnectionName != null)
+				for (Red red : allDataList)
 				{
-					// --- POR NOMBRE DE CONEXIÓN WIRELESS ---
-					if (this.checkIsBlankEmpty(wLanConnectionName))
+					Date fechaRed = red.getFecha();
+					LocalDateTime localDateTimeFechaRed = fechaRed.toInstant().atZone(ZoneId.systemDefault())
+							.toLocalDateTime();
+	
+					if (localDateTimeHoy.getDayOfMonth() == localDateTimeFechaRed.getDayOfMonth())
 					{
-						String error = "wLanConnectionName or nombreRed is Empty or Blank";
-						NetworkException networkException = new NetworkException(404, error, null);
-						return ResponseEntity.status(404).body(networkException.getMessage());
-					}
-					
-					List<Red> redList = this.iRedRepository.findAll();
-					
-					for (Red red : redList) 
-					{
-						if(red.getWlanConectionName() != null && red.getWlanConectionName().equals(wLanConnectionName))
+						List<Equipo> equiposUnicos = new ArrayList<>();
+						for (Equipo equipo : red.getEquipos())
 						{
-							equiposList.addAll(red.getEquipos());
+							if (!ipsAgregadas.contains(equipo.getIp()))
+							{
+								equiposUnicos.add(equipo);
+								ipsAgregadas.add(equipo.getIp());
+							}
 						}
+						red.setEquipos(equiposUnicos);
+						filteredRedes.add(red);
 					}
-				}
-				else if(ip != null)
-				{
-					// --- POR IP ---
-					if (this.checkIsBlankEmpty(ip))
-					{
-						String error = "ip is Empty or Blank";
-						NetworkException networkException = new NetworkException(404, error, null);
-						return ResponseEntity.status(404).body(networkException.getMessage());
-					}
-					equiposList.addAll(this.iEquipoRepository.findByIp(ip));
-				}
-				else if (so != null)
-				{
-					// --- POR SISTEMA OPERATIVO ---
-					if(this.checkIsBlankEmpty(so))
-					{
-						String error = "so is Empty or Blank";
-						NetworkException networkException = new NetworkException(404, error, null);
-						return ResponseEntity.status(404).body(networkException.getMessage());
-					}
-					equiposList.addAll(this.iEquipoRepository.findBySo(so));
-				}
-				else if (tipo != null)
-				{
-					// --- POR PUERTO ---
-					if(this.checkIsBlankEmpty(tipo))
-					{
-						String error = "numeroPuerto is Empty or Blank";
-						NetworkException networkException = new NetworkException(404, error, null);
-						return ResponseEntity.status(404).body(networkException.getMessage());
-					}
-					equiposList.addAll(this.iEquipoRepository.findByTipo(tipo));
 				}
 			}
 			else
 			{
-				// Si no viene ningún parámetro se mostrarán todos los equipos dsiponibles
-				equiposList.addAll(this.iEquipoRepository.findAll());
+				for (Red red : allDataList)
+				{
+					Date fechaRed = red.getFecha();
+					LocalDateTime localDateTimeFechaRed = fechaRed.toInstant().atZone(ZoneId.systemDefault())
+							.toLocalDateTime();
+	
+					if (localDateTimeHoy.getDayOfMonth() == localDateTimeFechaRed.getDayOfMonth())
+					{
+						List<Equipo> equiposUnicos = new ArrayList<>();
+						for (Equipo equipo : red.getEquipos())
+						{
+							if (!ipsAgregadas.contains(equipo.getIp()) && equipo.getIp().equals(ip))
+							{
+								equiposUnicos.add(equipo);
+								ipsAgregadas.add(equipo.getIp());
+							}
+						}
+						red.setEquipos(equiposUnicos);
+						filteredRedes.add(red);
+					}
+				}
 			}
 			
-			return ResponseEntity.ok().body(equiposList);
-		}
-		catch (Exception exception)
+			
+			return ResponseEntity.ok().body(filteredRedes);
+		} catch (Exception exception)
 		{
-			// IF ANY ERROR , RETURNS EMPTY LIST (FOR THE SWAGGER EXAMPLES)
+			// IF ANY ERROR, RETURNS EMPTY LIST (FOR THE SWAGGER EXAMPLES)
 			String error = "Error getting the info";
 			log.error(error, exception);
 			return ResponseEntity.status(500).body(new ArrayList<>());
 		}
 	}
-	
+
 	/**
-	 * Metodo checkIsBlankEmpty que comprueba si los campos vienen vacíos o en blanco
+	 * Metodo checkIsBlankEmpty que comprueba si los campos vienen vacíos o en
+	 * blanco
 	 * 
 	 * @param stringParameter
 	 * @return true si lo son, false si no
 	 */
 	private boolean checkIsBlankEmpty(String stringParameter)
 	{
-		if (stringParameter.isBlank() || stringParameter.isEmpty())
+		if (stringParameter.isBlank() || stringParameter.isEmpty() || stringParameter == null)
 		{
 			return true;
 		}
 		return false;
 	}
-	
+
 	/**
-	 * Metodo deleteRedBeforeDate que borra la información de todas las redes anteriores a un día
+	 * Metodo deleteRedBeforeDate que borra la información de todas las redes
+	 * anteriores a un día
 	 * 
 	 * @param numeroDias
 	 * @return
 	 */
-	@RequestMapping(method = RequestMethod.POST, value = "/red/deleteAllBefore",produces="application/json")
+	@RequestMapping(method = RequestMethod.POST, value = "/red/deleteAllBefore", produces = "application/json")
 	public ResponseEntity<?> deleteRedBeforeDate(@RequestParam(required = false) String numeroDiasString)
 	{
 		try
 		{
-			if (numeroDiasString != null && !numeroDiasString.isEmpty()) 
+			if (numeroDiasString != null && !numeroDiasString.isEmpty())
 			{
-	            // Convertir la cadena a un entero
-	            Integer numeroDias = Integer.parseInt(numeroDiasString);
-	            LocalDate hoy = LocalDate.now();
-                LocalDateTime localDateTimeHoy = hoy.atStartOfDay();
-                
-                LocalDateTime localDateTimeBorrarAntesDe = localDateTimeHoy.minusDays(numeroDias);
-                log.info("Se pretende borrar toda la información de redes registradas antes de la fecha: " + localDateTimeBorrarAntesDe);
+				// Convertir la cadena a un entero
+				Integer numeroDias = Integer.parseInt(numeroDiasString);
+				LocalDate hoy = LocalDate.now();
+				LocalDateTime localDateTimeHoy = hoy.atStartOfDay();
 
-                List<Red> redesList = this.iRedRepository.findByFechaBefore(localDateTimeBorrarAntesDe);
+				LocalDateTime localDateTimeBorrarAntesDe = localDateTimeHoy.minusDays(numeroDias);
 
-                
-	            if (numeroDias >= 0) 
-	            {
-	                
-	                for (Red red : redesList) 
-	                {
-	                    this.iRedRepository.delete(red);
-	                    log.info("Red borrada: " + red.getId() + " --> " + red.getWlanConectionName());
-	                }
-	            } 
-	            else 
-	            {
-	            	Red ultimaFechaIntroducida = null;
-	                for (Red red : redesList) 
-	                {
-	                    if (ultimaFechaIntroducida == null || red.getFecha().after(ultimaFechaIntroducida.getFecha())) 
-	                    {
-	                        ultimaFechaIntroducida = red;
-	                    }
-	                }
-	            	
-	            	log.info("Se van a borrar todas las redes anteriores a la ultima escaneada o en proceso de escaneo");
-	            	for (Red red : redesList) 
-	            	{
-	                    if (!red.equals(ultimaFechaIntroducida)) 
-	                    {
-	                        this.iRedRepository.delete(red);
-	                        log.info("Red borrada: " + red.getId() + " --> " + red.getWlanConectionName());
-	                    }
-	                }
-	            }
-	        } 
-			else 
-	        {
-	            String error = "El numero de días no puede ser nulo o vacio";
-	            log.error(error);
-	            return ResponseEntity.status(500).body(error);
-	        }
-			
+				List<Red> redesList = this.iRedRepository.findByFechaBefore(localDateTimeBorrarAntesDe);
+
+				if (numeroDias >= 0)
+				{
+					log.info("Se pretende borrar toda la información de redes registradas antes de la fecha: "
+							+ localDateTimeBorrarAntesDe);
+
+					for (Red red : redesList)
+					{
+						this.iRedRepository.delete(red);
+						log.info("Red borrada: " + red.getId() + " --> " + red.getWlanConectionName());
+					}
+				} else
+				{
+					Red ultimaFechaIntroducida = null;
+					for (Red red : redesList)
+					{
+						if (ultimaFechaIntroducida == null || red.getFecha().after(ultimaFechaIntroducida.getFecha()))
+						{
+							ultimaFechaIntroducida = red;
+						}
+					}
+
+					log.info("Se borrarán todas las redes, excepto la ultima escaneada o en proceso de escaneo");
+					for (Red red : redesList)
+					{
+						if (!red.equals(ultimaFechaIntroducida))
+						{
+							this.iRedRepository.delete(red);
+							log.info("Red borrada: " + red.getId() + " --> " + red.getWlanConectionName());
+						}
+					}
+				}
+			} else
+			{
+				String error = "El numero de días no puede ser nulo o vacio";
+				log.error(error);
+				return ResponseEntity.status(500).body(error);
+			}
+
 			return ResponseEntity.ok().body("OK");
-		}
-		catch (Exception exception)
+		} catch (Exception exception)
 		{
 			// IF ANY ERROR , RETURNS EMPTY LIST (FOR THE SWAGGER EXAMPLES)
 			String error = "Error getting the info";
@@ -282,5 +270,5 @@ public class NetworkRestApplication
 			return ResponseEntity.status(500).body(new ArrayList<>());
 		}
 	}
-	
+
 }
