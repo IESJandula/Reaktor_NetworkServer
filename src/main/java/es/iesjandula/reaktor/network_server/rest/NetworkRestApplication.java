@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import es.iesjandula.reaktor.network_server.constants.Constants;
 import es.iesjandula.reaktor.network_server.exception.NetworkException;
 import es.iesjandula.reaktor.network_server.models.Equipo;
 import es.iesjandula.reaktor.network_server.models.Puerto;
@@ -28,6 +29,7 @@ import es.iesjandula.reaktor.network_server.models.Red;
 import es.iesjandula.reaktor.network_server.repository.IEquipoRepository;
 import es.iesjandula.reaktor.network_server.repository.IPuertoRepository;
 import es.iesjandula.reaktor.network_server.repository.IRedRepository;
+import es.iesjandula.reaktor.network_server.utils.Utils;
 import io.swagger.v3.oas.annotations.Operation;
 
 @RestController
@@ -102,16 +104,19 @@ public class NetworkRestApplication
 	}
 
 	/**
-	 * Metodo searchRed busca red por el atributo que le pases
+	 * Metodo searchRed filtra la red y encuentra equipos segun lo que se le pase en el filtro
 	 * 
-	 * @param wLanConnectionName
 	 * @param ip
-	 * @param so
-	 * @param numeroPuerto
+	 * @param mac
+	 * @param tipo
 	 * @return
 	 */
 	@RequestMapping(method = RequestMethod.GET, value = "/red/by/search", produces = "application/json")
-	public ResponseEntity<List<Red>> searchRed(@RequestParam(required = false) String ip)
+	public ResponseEntity<List<Red>> searchRed(
+				@RequestParam(required = false) String ip,
+				@RequestParam(required = false) String mac,
+				@RequestParam(required = false) String tipo
+			)
 	{
 		try
 		{
@@ -120,11 +125,110 @@ public class NetworkRestApplication
 
 			List<Red> filteredRedes = new ArrayList<>();
 			Set<String> ipsAgregadas = new HashSet<>();
+			Set<String> macsAgregadas = new HashSet<>();
+			Set<String> tiposAgregados = new HashSet<>();
 			
 			Date fechaHoy = new Date();
 			LocalDateTime localDateTimeHoy = fechaHoy.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
 			
-			if(ip.equals(""))
+			if(!ip.equals(""))
+			{
+				for (Red red : allDataList)
+				{
+					Date fechaRed = red.getFecha();
+					LocalDateTime localDateTimeFechaRed = fechaRed.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+	
+					if (localDateTimeHoy.getDayOfMonth() == localDateTimeFechaRed.getDayOfMonth())
+					{
+						List<Equipo> equiposUnicos = new ArrayList<>();
+						for (Equipo equipo : red.getEquipos())
+						{
+							if (!ipsAgregadas.contains(equipo.getIp()) && equipo.getIp().equals(ip))
+							{
+								equiposUnicos.add(equipo);
+								ipsAgregadas.add(equipo.getIp());
+							}
+						}
+						red.setEquipos(equiposUnicos);
+						filteredRedes.add(red);
+					}
+				}
+			}
+			else if(!mac.equals(""))
+			{
+				for (Red red : allDataList)
+				{
+					Date fechaRed = red.getFecha();
+					LocalDateTime localDateTimeFechaRed = fechaRed.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+	
+					if (localDateTimeHoy.getDayOfMonth() == localDateTimeFechaRed.getDayOfMonth())
+					{
+						List<Equipo> equiposUnicos = new ArrayList<>();
+						for (Equipo equipo : red.getEquipos())
+						{
+							if (!macsAgregadas.contains(equipo.getMac()) && equipo.getMac().equals(mac))
+							{
+								equiposUnicos.add(equipo);
+								macsAgregadas.add(equipo.getMac());
+							}
+						}
+						red.setEquipos(equiposUnicos);
+						filteredRedes.add(red);
+					}
+				}
+			}
+			else if (!tipo.equals(""))
+			{
+			    filteredRedes.clear();
+			    
+			    // Encontrar el último registro de Red
+			    if (!allDataList.isEmpty())
+			    {
+			        // Suponiendo que allDataList está ordenado por fecha en orden ascendente, el último registro será el último elemento de la lista
+			        Red ultimaRed = allDataList.get(allDataList.size() - 1);
+			        
+			        Date fechaRed = ultimaRed.getFecha();
+			        LocalDateTime localDateTimeFechaRed = fechaRed.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+
+			        if (localDateTimeHoy.getDayOfMonth() == localDateTimeFechaRed.getDayOfMonth())
+			        {
+			            List<Equipo> equiposUnicos = new ArrayList<>();
+			            for (Equipo equipo : ultimaRed.getEquipos())
+			            {
+			                int i = 0;
+			                while ((i < equipo.getPuertos().size()) && (equipo.getTipo() == null))
+			                {
+			                    // Si el número del puerto es el 9100, el 515 o el 631
+			                    if ((equipo.getPuertos().get(i).getPuertoId().getNumero() == Constants.PUERTO_9100)
+			                            || (equipo.getPuertos().get(i).getPuertoId().getNumero() == Constants.PUERTO_515)
+			                            || (equipo.getPuertos().get(i).getPuertoId().getNumero() == Constants.PUERTO_631))
+			                    {
+			                        // Será una impresora
+			                        equipo.setTipo(Equipo.TIPO_IMPRESORA);
+			                    }
+			                    i++;
+			                }
+
+			                // Si no ha encontrado nada
+			                if (equipo.getTipo() == null)
+			                {
+			                    // Será un pc
+			                    equipo.setTipo(Equipo.TIPO_STANDARD);
+			                }
+
+			                // Añade el equipo si su tipo coincide con el tipo buscado
+			                if (equipo.getTipo() != null && !ipsAgregadas.contains(equipo.getIp()) && equipo.getTipo().equals(tipo))
+			                {
+			                    equiposUnicos.add(equipo);
+			                    ipsAgregadas.add(equipo.getIp());
+			                }
+			            }
+			            ultimaRed.setEquipos(equiposUnicos);
+			            filteredRedes.add(ultimaRed);
+			        }
+			    }
+			}
+			else
 			{
 				for (Red red : allDataList)
 				{
@@ -148,30 +252,6 @@ public class NetworkRestApplication
 					}
 				}
 			}
-			else
-			{
-				for (Red red : allDataList)
-				{
-					Date fechaRed = red.getFecha();
-					LocalDateTime localDateTimeFechaRed = fechaRed.toInstant().atZone(ZoneId.systemDefault())
-							.toLocalDateTime();
-	
-					if (localDateTimeHoy.getDayOfMonth() == localDateTimeFechaRed.getDayOfMonth())
-					{
-						List<Equipo> equiposUnicos = new ArrayList<>();
-						for (Equipo equipo : red.getEquipos())
-						{
-							if (!ipsAgregadas.contains(equipo.getIp()) && equipo.getIp().equals(ip))
-							{
-								equiposUnicos.add(equipo);
-								ipsAgregadas.add(equipo.getIp());
-							}
-						}
-						red.setEquipos(equiposUnicos);
-						filteredRedes.add(red);
-					}
-				}
-			}
 			
 			
 			return ResponseEntity.ok().body(filteredRedes);
@@ -184,6 +264,89 @@ public class NetworkRestApplication
 		}
 	}
 
+	/**
+	 * Metodo searchRed busca red por el atributo que le pases
+	 * 
+	 * @param wLanConnectionName
+	 * @param ip
+	 * @param so
+	 * @param numeroPuerto
+	 * @return
+	 */
+//	@RequestMapping(method = RequestMethod.GET, value = "/red/by/search/mac", produces = "application/json")
+//	public ResponseEntity<List<Red>> searchRedByMac(@RequestParam(required = false) String mac)
+//	{
+//		try
+//		{
+//			// GET ALL RED LIST sorted by date in descending order
+//			List<Red> allDataList = this.iRedRepository.findAll(Sort.by(Sort.Direction.DESC, "fecha"));
+//
+//			List<Red> filteredRedes = new ArrayList<>();
+//			Set<String> macsAgregadas = new HashSet<>();
+//			
+//			Date fechaHoy = new Date();
+//			LocalDateTime localDateTimeHoy = fechaHoy.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+//			
+//			if(mac.equals(""))
+//			{
+//				for (Red red : allDataList)
+//				{
+//					Date fechaRed = red.getFecha();
+//					LocalDateTime localDateTimeFechaRed = fechaRed.toInstant().atZone(ZoneId.systemDefault())
+//							.toLocalDateTime();
+//	
+//					if (localDateTimeHoy.getDayOfMonth() == localDateTimeFechaRed.getDayOfMonth())
+//					{
+//						List<Equipo> equiposUnicos = new ArrayList<>();
+//						for (Equipo equipo : red.getEquipos())
+//						{
+//							if (!macsAgregadas.contains(equipo.getMac()))
+//							{
+//								equiposUnicos.add(equipo);
+//								macsAgregadas.add(equipo.getMac());
+//							}
+//						}
+//						red.setEquipos(equiposUnicos);
+//						filteredRedes.add(red);
+//					}
+//				}
+//			}
+//			else
+//			{
+//				for (Red red : allDataList)
+//				{
+//					Date fechaRed = red.getFecha();
+//					LocalDateTime localDateTimeFechaRed = fechaRed.toInstant().atZone(ZoneId.systemDefault())
+//							.toLocalDateTime();
+//	
+//					if (localDateTimeHoy.getDayOfMonth() == localDateTimeFechaRed.getDayOfMonth())
+//					{
+//						List<Equipo> equiposUnicos = new ArrayList<>();
+//						for (Equipo equipo : red.getEquipos())
+//						{
+//							if (!macsAgregadas.contains(equipo.getMac()) && equipo.getMac().equals(mac))
+//							{
+//								equiposUnicos.add(equipo);
+//								macsAgregadas.add(equipo.getMac());
+//							}
+//						}
+//						red.setEquipos(equiposUnicos);
+//						filteredRedes.add(red);
+//					}
+//				}
+//			}
+//			
+//			
+//			return ResponseEntity.ok().body(filteredRedes);
+//		} catch (Exception exception)
+//		{
+//			// IF ANY ERROR, RETURNS EMPTY LIST (FOR THE SWAGGER EXAMPLES)
+//			String error = "Error getting the info";
+//			log.error(error, exception);
+//			return ResponseEntity.status(500).body(new ArrayList<>());
+//		}
+//	}
+	
 	/**
 	 * Metodo checkIsBlankEmpty que comprueba si los campos vienen vacíos o en
 	 * blanco
