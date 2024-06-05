@@ -151,23 +151,17 @@ public class NetworkRestApplication
 			}
 			else if (!tipo.equals(""))
 			{
-			    filteredRedes.clear();
-			    
-			    // Encontrar el último registro de Red
-			    if (!allDataList.isEmpty())
-			    {
-			        // Suponiendo que allDataList está ordenado por fecha en orden ascendente, el último registro será el último elemento de la lista
-			        Red ultimaRed = allDataList.get(allDataList.size() - 1);
-			        
-			        Date fechaRed = ultimaRed.getFecha();
+				for (Red red : allDataList)
+				{
+			        Date fechaRed = red.getFecha();
 			        LocalDateTime localDateTimeFechaRed = fechaRed.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
 
 			        if (localDateTimeHoy.getDayOfMonth() == localDateTimeFechaRed.getDayOfMonth())
 			        {
 			            List<Equipo> equiposUnicos = new ArrayList<>();
-			            for (Equipo equipo : ultimaRed.getEquipos())
+			            for (Equipo equipo : red.getEquipos())
 			            {
-			                int i = 0;
+			            	int i = 0;
 			                while ((i < equipo.getPuertos().size()) && (equipo.getTipo() == null))
 			                {
 			                    // Si el número del puerto es el 9100, el 515 o el 631
@@ -195,8 +189,8 @@ public class NetworkRestApplication
 			                    ipsAgregadas.add(equipo.getIp());
 			                }
 			            }
-			            ultimaRed.setEquipos(equiposUnicos);
-			            filteredRedes.add(ultimaRed);
+			            red.setEquipos(equiposUnicos);
+			            filteredRedes.add(red);
 			        }
 			    }
 			}
