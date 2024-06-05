@@ -62,45 +62,17 @@ public class NetworkRestApplication
 	{
 		try
 		{
-			// GET ALL RED LIST sorted by date in descending order
-			List<Red> allDataList = this.iRedRepository.findAll(Sort.by(Sort.Direction.DESC, "fecha"));
-
-			List<Red> redesHoy = new ArrayList<>();
-			Set<String> ipsAgregadas = new HashSet<>();
-
-			Date fechaHoy = new Date();
-			LocalDateTime localDateTimeHoy = fechaHoy.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
-
-			for (Red red : allDataList)
-			{
-				Date fechaRed = red.getFecha();
-				LocalDateTime localDateTimeFechaRed = fechaRed.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
-
-				if (localDateTimeHoy.getDayOfMonth() == localDateTimeFechaRed.getDayOfMonth())
-				{
-					List<Equipo> equiposUnicos = new ArrayList<>();
-					for (Equipo equipo : red.getEquipos())
-					{
-						if (!ipsAgregadas.contains(equipo.getIp()))
-						{
-							equiposUnicos.add(equipo);
-							ipsAgregadas.add(equipo.getIp());
-						}
-					}
-					red.setEquipos(equiposUnicos);
-					redesHoy.add(red);
-				}
-			}
-
-			return ResponseEntity.ok().body(redesHoy);
-		} catch (Exception exception)
+			// GET ALL RED LIST
+			List<Red> allDataList = this.iRedRepository.findAll();
+			return ResponseEntity.ok().body(allDataList);
+		}
+		catch (Exception exception)
 		{
 			// IF ANY ERROR , RETURNS EMPTY LIST (FOR THE SWAGGER EXAMPLES)
 			String error = "Error getting the info";
 			log.error(error, exception);
 			return ResponseEntity.status(500).body(new ArrayList<>());
 		}
-
 	}
 
 	/**
@@ -263,89 +235,6 @@ public class NetworkRestApplication
 			return ResponseEntity.status(500).body(new ArrayList<>());
 		}
 	}
-
-	/**
-	 * Metodo searchRed busca red por el atributo que le pases
-	 * 
-	 * @param wLanConnectionName
-	 * @param ip
-	 * @param so
-	 * @param numeroPuerto
-	 * @return
-	 */
-//	@RequestMapping(method = RequestMethod.GET, value = "/red/by/search/mac", produces = "application/json")
-//	public ResponseEntity<List<Red>> searchRedByMac(@RequestParam(required = false) String mac)
-//	{
-//		try
-//		{
-//			// GET ALL RED LIST sorted by date in descending order
-//			List<Red> allDataList = this.iRedRepository.findAll(Sort.by(Sort.Direction.DESC, "fecha"));
-//
-//			List<Red> filteredRedes = new ArrayList<>();
-//			Set<String> macsAgregadas = new HashSet<>();
-//			
-//			Date fechaHoy = new Date();
-//			LocalDateTime localDateTimeHoy = fechaHoy.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
-//			
-//			if(mac.equals(""))
-//			{
-//				for (Red red : allDataList)
-//				{
-//					Date fechaRed = red.getFecha();
-//					LocalDateTime localDateTimeFechaRed = fechaRed.toInstant().atZone(ZoneId.systemDefault())
-//							.toLocalDateTime();
-//	
-//					if (localDateTimeHoy.getDayOfMonth() == localDateTimeFechaRed.getDayOfMonth())
-//					{
-//						List<Equipo> equiposUnicos = new ArrayList<>();
-//						for (Equipo equipo : red.getEquipos())
-//						{
-//							if (!macsAgregadas.contains(equipo.getMac()))
-//							{
-//								equiposUnicos.add(equipo);
-//								macsAgregadas.add(equipo.getMac());
-//							}
-//						}
-//						red.setEquipos(equiposUnicos);
-//						filteredRedes.add(red);
-//					}
-//				}
-//			}
-//			else
-//			{
-//				for (Red red : allDataList)
-//				{
-//					Date fechaRed = red.getFecha();
-//					LocalDateTime localDateTimeFechaRed = fechaRed.toInstant().atZone(ZoneId.systemDefault())
-//							.toLocalDateTime();
-//	
-//					if (localDateTimeHoy.getDayOfMonth() == localDateTimeFechaRed.getDayOfMonth())
-//					{
-//						List<Equipo> equiposUnicos = new ArrayList<>();
-//						for (Equipo equipo : red.getEquipos())
-//						{
-//							if (!macsAgregadas.contains(equipo.getMac()) && equipo.getMac().equals(mac))
-//							{
-//								equiposUnicos.add(equipo);
-//								macsAgregadas.add(equipo.getMac());
-//							}
-//						}
-//						red.setEquipos(equiposUnicos);
-//						filteredRedes.add(red);
-//					}
-//				}
-//			}
-//			
-//			
-//			return ResponseEntity.ok().body(filteredRedes);
-//		} catch (Exception exception)
-//		{
-//			// IF ANY ERROR, RETURNS EMPTY LIST (FOR THE SWAGGER EXAMPLES)
-//			String error = "Error getting the info";
-//			log.error(error, exception);
-//			return ResponseEntity.status(500).body(new ArrayList<>());
-//		}
-//	}
 	
 	/**
 	 * Metodo checkIsBlankEmpty que comprueba si los campos vienen vacíos o en
