@@ -98,7 +98,6 @@ public class NetworkRestApplication
 			List<Red> filteredRedes = new ArrayList<>();
 			Set<String> ipsAgregadas = new HashSet<>();
 			Set<String> macsAgregadas = new HashSet<>();
-			Set<String> tiposAgregados = new HashSet<>();
 			
 			Date fechaHoy = new Date();
 			LocalDateTime localDateTimeHoy = fechaHoy.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
