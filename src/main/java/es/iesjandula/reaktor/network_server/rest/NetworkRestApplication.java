@@ -160,32 +160,14 @@ public class NetworkRestApplication
 			            List<Equipo> equiposUnicos = new ArrayList<>();
 			            for (Equipo equipo : red.getEquipos())
 			            {
-			            	int i = 0;
-			                while ((i < equipo.getPuertos().size()) && (equipo.getTipo() == null))
+			            	// Añade el equipo si su tipo coincide con el tipo buscado
+			                if (equipo.getTipo() != null)
 			                {
-			                    // Si el número del puerto es el 9100, el 515 o el 631
-			                    if ((equipo.getPuertos().get(i).getPuertoId().getNumero() == Constants.PUERTO_9100)
-			                            || (equipo.getPuertos().get(i).getPuertoId().getNumero() == Constants.PUERTO_515)
-			                            || (equipo.getPuertos().get(i).getPuertoId().getNumero() == Constants.PUERTO_631))
-			                    {
-			                        // Será una impresora
-			                        equipo.setTipo(Equipo.TIPO_IMPRESORA);
-			                    }
-			                    i++;
-			                }
-
-			                // Si no ha encontrado nada
-			                if (equipo.getTipo() == null)
-			                {
-			                    // Será un pc
-			                    equipo.setTipo(Equipo.TIPO_STANDARD);
-			                }
-
-			                // Añade el equipo si su tipo coincide con el tipo buscado
-			                if (equipo.getTipo() != null && !ipsAgregadas.contains(equipo.getIp()) && equipo.getTipo().equals(tipo))
-			                {
-			                    equiposUnicos.add(equipo);
-			                    ipsAgregadas.add(equipo.getIp());
+			                	if(!ipsAgregadas.contains(equipo.getIp()) && equipo.getTipo().equals(tipo))
+			                	{
+				                    equiposUnicos.add(equipo);
+				                    ipsAgregadas.add(equipo.getIp());
+			                	}
 			                }
 			            }
 			            red.setEquipos(equiposUnicos);
