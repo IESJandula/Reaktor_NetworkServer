@@ -83,6 +83,7 @@ public class NetworkRestApplication
 	 * @param tipo
 	 * @return
 	 */
+	@Operation
 	@RequestMapping(method = RequestMethod.GET, value = "/red/by/search", produces = "application/json")
 	public ResponseEntity<List<Red>> searchRed(
 				@RequestParam(required = false) String ip,
