@@ -181,8 +181,7 @@ public class NetworkRestApplication
 				for (Red red : allDataList)
 				{
 					Date fechaRed = red.getFecha();
-					LocalDateTime localDateTimeFechaRed = fechaRed.toInstant().atZone(ZoneId.systemDefault())
-							.toLocalDateTime();
+					LocalDateTime localDateTimeFechaRed = fechaRed.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
 	
 					if (localDateTimeHoy.getDayOfMonth() == localDateTimeFechaRed.getDayOfMonth())
 					{
@@ -203,7 +202,8 @@ public class NetworkRestApplication
 			
 			
 			return ResponseEntity.ok().body(filteredRedes);
-		} catch (Exception exception)
+		} 
+		catch (Exception exception)
 		{
 			// IF ANY ERROR, RETURNS EMPTY LIST (FOR THE SWAGGER EXAMPLES)
 			String error = "Error getting the info";
@@ -261,7 +261,8 @@ public class NetworkRestApplication
 						this.iRedRepository.delete(red);
 						log.info("Red borrada: " + red.getId() + " --> " + red.getWlanConectionName());
 					}
-				} else
+				} 
+				else
 				{
 					Red ultimaFechaIntroducida = null;
 					for (Red red : redesList)
@@ -282,7 +283,8 @@ public class NetworkRestApplication
 						}
 					}
 				}
-			} else
+			} 
+			else
 			{
 				String error = "El numero de días no puede ser nulo o vacio";
 				log.error(error);
@@ -290,7 +292,8 @@ public class NetworkRestApplication
 			}
 
 			return ResponseEntity.ok().body("OK");
-		} catch (Exception exception)
+		} 
+		catch (Exception exception)
 		{
 			// IF ANY ERROR , RETURNS EMPTY LIST (FOR THE SWAGGER EXAMPLES)
 			String error = "Error getting the info";
