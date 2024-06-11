@@ -153,28 +153,28 @@ public class NetworkRestApplication
 			{
 				for (Red red : allDataList)
 				{
-			        Date fechaRed = red.getFecha();
-			        LocalDateTime localDateTimeFechaRed = fechaRed.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
-
-			        if (localDateTimeHoy.getDayOfMonth() == localDateTimeFechaRed.getDayOfMonth())
-			        {
-			            List<Equipo> equiposUnicos = new ArrayList<>();
-			            for (Equipo equipo : red.getEquipos())
-			            {
-			            	// Añade el equipo si su tipo coincide con el tipo buscado
-			                if (equipo.getTipo() != null)
-			                {
-			                	if(!ipsAgregadas.contains(equipo.getIp()) && equipo.getTipo().equals(tipo))
-			                	{
-				                    equiposUnicos.add(equipo);
-				                    ipsAgregadas.add(equipo.getIp());
-			                	}
-			                }
-			            }
-			            red.setEquipos(equiposUnicos);
-			            filteredRedes.add(red);
-			        }
-			    }
+				        Date fechaRed = red.getFecha();
+				        LocalDateTime localDateTimeFechaRed = fechaRed.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+	
+				        if (localDateTimeHoy.getDayOfMonth() == localDateTimeFechaRed.getDayOfMonth())
+				        {
+				            List<Equipo> equiposUnicos = new ArrayList<>();
+				            for (Equipo equipo : red.getEquipos())
+				            {
+				            	// Añade el equipo si su tipo coincide con el tipo buscado
+				                if (equipo.getTipo() != null)
+				                {
+				                	if(!ipsAgregadas.contains(equipo.getIp()) && equipo.getTipo().equals(tipo))
+				                	{
+					                    equiposUnicos.add(equipo);
+					                    ipsAgregadas.add(equipo.getIp());
+				                	}
+				                }
+				            }
+				            red.setEquipos(equiposUnicos);
+				            filteredRedes.add(red);
+				        }
+			    	}
 			}
 			else
 			{
@@ -301,5 +301,4 @@ public class NetworkRestApplication
 			return ResponseEntity.status(500).body(new ArrayList<>());
 		}
 	}
-
 }
