@@ -11,5 +11,5 @@ import es.iesjandula.reaktor.network_server.models.Id.PuertoId;
  */
 public interface IPuertoRepository extends JpaRepository<Puerto, PuertoId>
 {
-
+	
 }

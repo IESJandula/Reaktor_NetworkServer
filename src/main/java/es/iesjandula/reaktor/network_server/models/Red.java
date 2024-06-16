@@ -1,7 +1,11 @@
 package es.iesjandula.reaktor.network_server.models;
 
 import java.io.Serializable;
+import java.util.Date;
 import java.util.List;
+
+import org.hibernate.annotations.Cascade;
+import org.hibernate.annotations.CascadeType;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -15,7 +19,7 @@ import lombok.NoArgsConstructor;
 
 @Data
 @NoArgsConstructor
-@AllArgsConstructor
+@AllArgsConstructor 
 
 @Entity
 @Table(name = "red")
@@ -55,8 +59,15 @@ public class Red implements Serializable
 	 */
 	@Column
 	private String rutaRed;
+	
+	/**
+	 * Attribute - fecha de introducción
+	 */
+	@Column
+	private Date fecha;
 
 	/** Attribute equipos */
 	@OneToMany(mappedBy = "red")
+	@Cascade(CascadeType.ALL)
 	private List<Equipo> equipos;
 }
